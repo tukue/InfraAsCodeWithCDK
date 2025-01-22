@@ -4,7 +4,7 @@
 This project deploys a serverless application using AWS CDK with TypeScript, including API Gateway, Lambda, and DynamoDB.
 
 ## Prerequisites
-- Node.js 16.x or later
+- Node.js 18.x or later
 - AWS CLI configured
 - AWS CDK CLI (`npm install -g aws-cdk`)
 
