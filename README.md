@@ -14,8 +14,8 @@ This project deploys a serverless application using AWS CDK with TypeScript, inc
 ```bash
 npm install
 
-AWS_ACCOUNT_ID=your-account-id
-AWS_REGION=your-region
+AWS_ACCOUNT_ID=account-id
+AWS_REGION=aws-region
 
 Deploy
 cdk bootstrap   # First time only
@@ -32,7 +32,7 @@ Request flow :
 
 Client → API Gateway → Lambda → DynamoDB
 ↑ ↓ ↓ ↓
-└──────── Response ← Data ← Database
+└──────── Response ← Data ← Databasen
 
 
 
