@@ -22,10 +22,19 @@ cdk bootstrap   # First time only
 cdk deploy
 
 Stack Components
+
 API Gateway REST API
 Lambda Function (Node.js)
 DynamoDB Table
-CloudWatch Logging
+CloudWatch Logging   
+
+Request flow : 
+
+Client → API Gateway → Lambda → DynamoDB
+↑ ↓ ↓ ↓
+└──────── Response ← Data ← Database
+
+
 
 Useful Commands
 npm run build   # Compile TypeScript
