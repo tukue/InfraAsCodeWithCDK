@@ -16,7 +16,7 @@ export const handler = async (
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        message: 'Hello from Lambda!',
+        message: 'Testing from Lambda!',
         event,
         context
       })

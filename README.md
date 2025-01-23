@@ -42,3 +42,25 @@ IAM authentication enabled
 Environment variables for sensitive data
 AWS managed encryption
 
+
+## Security & Monitoring
+- API Gateway logs to CloudWatch
+- Lambda execution tracing with X-Ray
+- IAM roles with least privilege
+- CORS configured for API endpoints
+
+## Infrastructure as Code
+- Defined using AWS CDK in TypeScript
+- Automated deployment via CloudFormation
+- Environment-specific tagging
+  - Environment: Development
+  - Project: DemoAPI
+
+## Stack Outputs
+- API Gateway URL
+- DynamoDB table name
+
+## Scaling
+- Lambda: Auto-scales based on demand
+- DynamoDB: Pay-per-request auto-scaling
+- API Gateway: Handles scaling automatically 

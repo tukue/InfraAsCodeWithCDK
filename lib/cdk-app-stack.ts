@@ -11,7 +11,7 @@ export class CdkAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // 1. DynamoDB Table Definition
+    //  DynamoDB Table Definition
     const dynamodb_table = new dynamodb.Table(this, "Table", {
       partitionKey: { 
         name: "id", 
@@ -27,7 +27,7 @@ export class CdkAppStack extends cdk.Stack {
       tableName: 'my-demo-table'
     });
 
-    // 2. Lambda Function Definition
+    //  Lambda Function Definition
     const lambda_backend = new NodejsFunction(this, 'function', {
       // Path to your Lambda function code
       entry: path.join(__dirname, 'function.ts'),
@@ -54,7 +54,7 @@ export class CdkAppStack extends cdk.Stack {
       tracing: lambda.Tracing.ACTIVE,
     });
 
-    // 3. Grant DynamoDB Permissions to Lambda
+    //  Grant DynamoDB Permissions to Lambda
     dynamodb_table.grantReadWriteData(lambda_backend.role!);
 
     // 4. API Gateway Definition
@@ -84,7 +84,7 @@ export class CdkAppStack extends cdk.Stack {
       },
     });
 
-    // 5. API Resources and Methods
+    //  API Resources and Methods
     // Root resource
     const rootIntegration = new gateway.LambdaIntegration(lambda_backend);
     api.root.addMethod('GET', rootIntegration);
@@ -95,7 +95,7 @@ export class CdkAppStack extends cdk.Stack {
     items.addMethod('GET', rootIntegration);
     items.addMethod('POST', rootIntegration);
 
-    // 6. Stack Outputs
+    //  Stack Outputs
     // Export important information
     new cdk.CfnOutput(this, 'ApiUrl', {
       value: api.url,
@@ -109,7 +109,7 @@ export class CdkAppStack extends cdk.Stack {
       exportName: 'tableName',
     });
 
-    // 7. Optional: Add Tags to Resources
+    //  Optional: Add Tags to Resources
     cdk.Tags.of(this).add('Environment', 'Development');
     cdk.Tags.of(this).add('Project', 'DemoAPI');
   }
