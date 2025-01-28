@@ -24,7 +24,7 @@ export class CdkAppStack extends cdk.Stack {
       // Optional: Set billing mode
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       // Optional: Set table name explicitly
-      tableName: 'my-demo-table'
+      tableName: 'DemoTable',
     });
 
     //  Lambda Function Definition
