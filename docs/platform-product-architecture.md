@@ -156,7 +156,7 @@ DX principles:
 
 ## 8) Suggested rollout plan
 
-1. **Phase 1 (2–4 weeks)**: repo restructure, CI guardrails, environment split.
-2. **Phase 2 (4–8 weeks)**: EKS baseline + Argo CD + observability stack.
-3. **Phase 3 (4–8 weeks)**: Backstage templates + scorecards + SLO framework.
-4. **Phase 4 (ongoing)**: policy hardening, cost governance, multi-team onboarding.
+1. **Phase 1**: repo restructure, CI guardrails, environment split.
+2. **Phase 2**: EKS baseline + Argo CD + observability stack.
+3. **Phase 3**: Backstage templates + scorecards + SLO framework.
+4. **Phase 4**: policy hardening, cost governance, multi-team onboarding.
