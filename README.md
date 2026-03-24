@@ -65,6 +65,13 @@ See detailed architecture and workflows in:
 - `docs/platform-product-architecture.md`
 - `templates/service-catalog/template.yaml`
 
+
+## Platform progress
+
+Track implementation maturity and next milestones in:
+
+- `docs/platform-product-progress.md`
+
 ## Quick commands
 
 ```bash
