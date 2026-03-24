@@ -1,0 +1,79 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: golden-path-k8s-service
+  title: Golden Path Kubernetes Service
+  description: Scaffold a secure, observable, GitOps-enabled microservice.
+  tags:
+    - platform
+    - kubernetes
+    - gitops
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - title: Service details
+      required:
+        - name
+        - owner
+        - runtime
+      properties:
+        name:
+          title: Service name
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        owner:
+          title: Team owner
+          type: string
+        runtime:
+          title: Runtime
+          type: string
+          enum: [nodejs, python, go]
+        tier:
+          title: Criticality tier
+          type: string
+          enum: [tier-1, tier-2, tier-3]
+        environments:
+          title: Target environments
+          type: array
+          items:
+            type: string
+            enum: [dev, stage, prod]
+          uniqueItems: true
+          default: [dev]
+
+  steps:
+    - id: fetch-base
+      name: Fetch golden-path skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          runtime: ${{ parameters.runtime }}
+          tier: ${{ parameters.tier }}
+
+    - id: publish
+      name: Publish repository
+      action: publish:github
+      input:
+        description: 'Golden path service for ${{ parameters.name }}'
+        repoUrl: github.com?owner=platform-org&repo=${{ parameters.name }}
+        defaultBranch: main
+
+    - id: register
+      name: Register in Backstage catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Catalog entry
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
