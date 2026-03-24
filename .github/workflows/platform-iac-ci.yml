@@ -1,0 +1,41 @@
+name: platform-iac-ci
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'platform/**'
+      - 'lib/**'
+      - 'bin/**'
+      - '.github/workflows/platform-iac-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Format check
+        run: npm run build
+
+      - name: CDK synth
+        run: npx cdk synth
+
+      - name: Static security scan (Checkov)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: cloudformation,terraform,github_actions
+          quiet: true
