@@ -66,6 +66,12 @@ See detailed architecture and workflows in:
 - `templates/service-catalog/template.yaml`
 
 
+## Code review resolution
+
+Review feedback and implemented fixes are tracked in:
+
+- `docs/code-review-resolution.md`
+
 ## Platform progress
 
 Track implementation maturity and next milestones in:
