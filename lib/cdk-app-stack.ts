@@ -24,6 +24,7 @@ export class CdkAppStack extends cdk.Stack {
     const appVpc = new ec2.Vpc(this, 'AppVpc', {
       maxAzs: 2,
       natGateways: 1,
+      restrictDefaultSecurityGroup: false,
       subnetConfiguration: [
         {
           cidrMask: 24,
