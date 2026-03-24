@@ -47,9 +47,11 @@ It now provides opinionated architecture, repository layout, templates, and deli
 └── Makefile
 ```
 
-## Golden-path developer workflow
+## Recommended-path developer workflow
 
-1. Developer opens Backstage and chooses the **golden path** service template.
+Template ID: `recommended-path-k8s-service`
+
+1. Developer opens Backstage and chooses the **recommended path** service template.
 2. Template scaffolds:
    - service repo skeleton
    - Kubernetes manifests/Helm chart

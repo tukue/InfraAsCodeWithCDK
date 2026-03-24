@@ -5,7 +5,7 @@ metadata:
   description: Golden path service scaffold for ${{ values.name }}
   tags:
     - ${{ values.runtime }}
-    - golden-path
+    - recommended-path
 spec:
   type: service
   lifecycle: experimental

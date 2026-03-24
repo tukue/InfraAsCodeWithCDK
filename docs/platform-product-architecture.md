@@ -82,7 +82,7 @@ Guidance:
 
 ### Example workflow
 1. Go to Backstage → “Create Service”.
-2. Choose template (`golden-path-k8s-service`).
+2. Choose template (`recommended-path-k8s-service`).
 3. Enter service name, owner, tier, runtime, environment targets.
 4. Template creates repo + registers component in Backstage.
 5. First PR includes generated CI, Helm/Kustomize, policy, and observability assets.

@@ -44,7 +44,7 @@ _Last updated: 2026-03-24_
 ## Suggested KPIs
 
 - Lead time to first deployment for a new service (target: < 30 minutes).
-- Percentage of services onboarded through golden-path template (target: > 80%).
+- Percentage of services onboarded through recommended-path template (target: > 80%).
 - Policy compliance pass rate in app PRs (target: > 95%).
 - Mean time to detect deployment issues (target: < 10 minutes).
 - Platform adoption by team count (target: all product teams by Q+2).

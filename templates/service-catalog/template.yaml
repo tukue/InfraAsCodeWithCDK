@@ -1,9 +1,9 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: golden-path-k8s-service
-  title: Golden Path Kubernetes Service
-  description: Scaffold a secure, observable, GitOps-enabled microservice.
+  name: recommended-path-k8s-service
+  title: Recommended Path Kubernetes Service
+  description: Scaffold a secure, observable, GitOps-enabled microservice using the recommended path.
   tags:
     - platform
     - kubernetes
@@ -50,7 +50,7 @@ spec:
 
   steps:
     - id: fetch-base
-      name: Fetch golden-path skeleton
+      name: Fetch recommended-path skeleton
       action: fetch:template
       input:
         url: ./skeleton
