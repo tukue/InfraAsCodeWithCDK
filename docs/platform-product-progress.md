@@ -7,7 +7,7 @@ _Last updated: 2026-03-24_
 | Workstream | Status | Progress | Notes |
 |---|---|---:|---|
 | Repository product model (platform vs applications) | ✅ Complete | 100% | Baseline folder model and docs are in place. |
-| Golden-path scaffolding (Backstage template) | ✅ Complete | 100% | Template + runnable skeleton added and parameterized org support enabled. |
+| Golden-path scaffolding (Backstage template) | ✅ Complete | 100% | Template + runnable repo structure added and parameterized org support enabled. |
 | Platform IaC CI guardrails | ✅ Complete | 100% | Build/synth/checkov workflow configured. |
 | App GitOps guardrails | ✅ Complete | 100% | kubeconform validation enabled and fail-fast behavior enforced. |
 | Secure-by-default CDK sample hardening | ✅ Complete | 100% | KMS, VPC, DLQ, IAM auth, caching, encrypted logs implemented. |
@@ -22,7 +22,7 @@ _Last updated: 2026-03-24_
 - Platform-as-a-product architecture documented with phased rollout and operating model.
 - CI guardrails introduced for both platform and application change paths.
 - Developer command interface established through `Makefile` targets.
-- Backstage self-service template now executable from a real scaffold skeleton.
+- Backstage self-service template now executable from a real scaffold repo structure.
 - Sample GitOps base manifests added for validation and onboarding reference.
 
 ## Current quarter priorities
@@ -31,7 +31,7 @@ _Last updated: 2026-03-24_
 2. Stand up Argo CD in `platform/services/argocd` with app-of-apps model.
 3. Add policy bundles and CI checks (`conftest` and/or `kyverno apply`) in `app-gitops-guardrails`.
 4. Add observability baseline (Prometheus, Grafana, Loki, OpenTelemetry Collector).
-5. Expand service skeleton with CI, Dockerfile, Helm chart, and SLO/runbook assets.
+5. Expand service repo structure with CI, Dockerfile, Helm chart, and SLO/runbook assets.
 
 ## Definition of done for next milestone
 

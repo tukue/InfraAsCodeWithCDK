@@ -53,7 +53,7 @@ Template ID: `recommended-path-k8s-service`
 
 1. Developer opens Backstage and chooses the **recommended path** service template.
 2. Template scaffolds:
-   - service repo skeleton
+   - service repo structure
    - Kubernetes manifests/Helm chart
    - CI pipeline and GitOps app definition
    - observability and security defaults

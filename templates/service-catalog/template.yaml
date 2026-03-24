@@ -50,10 +50,10 @@ spec:
 
   steps:
     - id: fetch-base
-      name: Fetch recommended-path skeleton
+      name: Fetch recommended-path repo structure
       action: fetch:template
       input:
-        url: ./skeleton
+        url: ./structure
         values:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}
@@ -64,7 +64,7 @@ spec:
       name: Publish repository
       action: publish:github
       input:
-        description: 'Golden path service for ${{ parameters.name }}'
+        description: 'Recommended path service for ${{ parameters.name }}'
         repoUrl: github.com?owner=${{ parameters.organization }}&repo=${{ parameters.name }}
         defaultBranch: main
 

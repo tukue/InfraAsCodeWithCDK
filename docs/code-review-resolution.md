@@ -8,9 +8,9 @@ This document captures how review feedback was applied during the Platform-as-a-
   - Removed failure suppression and ensured kubeconform exits non-zero on invalid resources.
   - Implemented deterministic manifest discovery with `find` to avoid shell glob portability issues in GitHub Actions.
 
-- [x] **Backstage template referenced missing skeleton path**
-  - Added `templates/service-catalog/skeleton/` with `catalog-info.yaml`, `README.md`, and `.gitignore`.
-  - Kept `fetch:template` path at `./skeleton` and made it executable.
+- [x] **Backstage template referenced missing repo structure path**
+  - Added `templates/service-catalog/structure/` with `catalog-info.yaml`, `README.md`, and `.gitignore`.
+  - Updated `fetch:template` path to `./structure` and made it executable.
 
 - [x] **Hardcoded GitHub organization in Backstage template**
   - Added required `organization` parameter.
