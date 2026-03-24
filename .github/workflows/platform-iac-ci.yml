@@ -9,6 +9,9 @@ on:
       - 'bin/**'
       - '.github/workflows/platform-iac-ci.yml'
 
+permissions:
+  contents: read
+
 jobs:
   quality-gates:
     runs-on: ubuntu-latest

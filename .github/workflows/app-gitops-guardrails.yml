@@ -7,6 +7,9 @@ on:
       - 'applications/**'
       - '.github/workflows/app-gitops-guardrails.yml'
 
+permissions:
+  contents: read
+
 jobs:
   app-policy-checks:
     runs-on: ubuntu-latest
