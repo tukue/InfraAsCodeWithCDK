@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  description: Golden path service scaffold for ${{ values.name }}
+  tags:
+    - ${{ values.runtime }}
+    - golden-path
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{ values.owner }}

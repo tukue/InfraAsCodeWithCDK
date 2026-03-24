@@ -17,6 +17,7 @@ spec:
       required:
         - name
         - owner
+        - organization
         - runtime
       properties:
         name:
@@ -26,6 +27,10 @@ spec:
         owner:
           title: Team owner
           type: string
+        organization:
+          title: GitHub organization
+          type: string
+          default: platform-org
         runtime:
           title: Runtime
           type: string
@@ -60,7 +65,7 @@ spec:
       action: publish:github
       input:
         description: 'Golden path service for ${{ parameters.name }}'
-        repoUrl: github.com?owner=platform-org&repo=${{ parameters.name }}
+        repoUrl: github.com?owner=${{ parameters.organization }}&repo=${{ parameters.name }}
         defaultBranch: main
 
     - id: register
