@@ -17,14 +17,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Go for policy toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
       - name: Validate Kubernetes manifests with kubeconform
         shell: bash
         run: |
           set -euo pipefail
 
-          curl -sSL -o kubeconform.tar.gz \
-            https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
-          tar -xzf kubeconform.tar.gz kubeconform
+          go install github.com/yannh/kubeconform/cmd/kubeconform@latest
+          export PATH="$PATH:$(go env GOPATH)/bin"
 
           mapfile -t manifest_files < <(find applications/gitops/base -type f \( -name '*.yaml' -o -name '*.yml' \) | sort)
 
@@ -33,12 +37,7 @@ jobs:
             exit 1
           fi
 
-          ./kubeconform -strict -summary "${manifest_files[@]}"
-
-      - name: Setup Go for Conftest install
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
+          kubeconform -strict -summary "${manifest_files[@]}"
 
       - name: Policy checks with Conftest
         shell: bash
