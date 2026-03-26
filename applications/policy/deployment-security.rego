@@ -12,7 +12,7 @@ deny contains msg if {
 deny contains msg if {
   input.kind == "Deployment"
   container := input.spec.template.spec.containers[_]
-  container.securityContext.allowPrivilegeEscalation != false
+  not container.securityContext.allowPrivilegeEscalation == false
   msg := sprintf("deployment %q container %q must set securityContext.allowPrivilegeEscalation=false", [input.metadata.name, container.name])
 }
 

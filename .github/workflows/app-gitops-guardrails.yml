@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          go install github.com/yannh/kubeconform/cmd/kubeconform@latest
+          go install github.com/yannh/kubeconform/cmd/kubeconform@v0.6.7
           export PATH="$PATH:$(go env GOPATH)/bin"
 
           mapfile -t manifest_files < <(find applications/gitops/base -type f \( -name '*.yaml' -o -name '*.yml' \) | sort)
@@ -44,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          go install github.com/open-policy-agent/conftest@latest
+          go install github.com/open-policy-agent/conftest@v0.57.0
           export PATH="$PATH:$(go env GOPATH)/bin"
 
           mapfile -t manifest_files < <(find applications/gitops/base -type f \( -name '*.yaml' -o -name '*.yml' \) | sort)

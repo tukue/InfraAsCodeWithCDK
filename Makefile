@@ -47,7 +47,7 @@ app-deploy:
 
 app-policy-test:
 	@echo "[app-policy-test] run conftest against applications/gitops/base with applications/policy"
-	@echo "conftest test applications/gitops/base/*.yaml -p applications/policy"
+	conftest test applications/gitops/base/*.yaml -p applications/policy
 
 platform-progress:
 	@cat docs/platform-product-progress.md
