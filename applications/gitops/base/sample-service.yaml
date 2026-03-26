@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: nginx:1.27
+          image: nginx:1.27.0
           ports:
             - containerPort: 80
           resources:
@@ -37,6 +37,7 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
 ---
 apiVersion: v1
 kind: Service

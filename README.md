@@ -18,6 +18,7 @@ It now provides opinionated architecture, repository layout, templates, and deli
 - Backstage software template example for self-service service creation
 - CI pipeline for platform IaC quality gates (fmt/validate/lint/security)
 - GitOps-oriented app delivery guardrails
+- OPA/Conftest policy bundle for Kubernetes deployment security checks
 - Day-2 DX helpers via `Makefile`
 
 ## Repository structure
@@ -79,6 +80,7 @@ Review feedback and implemented fixes are tracked in:
 Track implementation maturity and next milestones in:
 
 - `docs/platform-product-progress.md`
+- `docs/platform-product-operating-model.md`
 
 ## Quick commands
 
@@ -89,6 +91,7 @@ make platform-plan ENV=dev
 make platform-apply ENV=dev
 make app-bootstrap SERVICE=my-api
 make app-deploy ENV=dev SERVICE=my-api TAG=v1.2.3
+make app-policy-test
 ```
 
 ## Notes

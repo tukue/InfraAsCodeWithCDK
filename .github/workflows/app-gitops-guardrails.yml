@@ -17,14 +17,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Go for policy toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
       - name: Validate Kubernetes manifests with kubeconform
         shell: bash
         run: |
           set -euo pipefail
 
-          curl -sSL -o kubeconform.tar.gz \
-            https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
-          tar -xzf kubeconform.tar.gz kubeconform
+          go install github.com/yannh/kubeconform/cmd/kubeconform@v0.6.7
+          export PATH="$PATH:$(go env GOPATH)/bin"
 
           mapfile -t manifest_files < <(find applications/gitops/base -type f \( -name '*.yaml' -o -name '*.yml' \) | sort)
 
@@ -33,8 +37,21 @@ jobs:
             exit 1
           fi
 
-          ./kubeconform -strict -summary "${manifest_files[@]}"
+          kubeconform -strict -summary "${manifest_files[@]}"
 
-      - name: Policy test placeholder (OPA/Kyverno)
+      - name: Policy checks with Conftest
+        shell: bash
         run: |
-          echo "Run conftest / kyverno CLI checks here"
+          set -euo pipefail
+
+          go install github.com/open-policy-agent/conftest@v0.57.0
+          export PATH="$PATH:$(go env GOPATH)/bin"
+
+          mapfile -t manifest_files < <(find applications/gitops/base -type f \( -name '*.yaml' -o -name '*.yml' \) | sort)
+
+          if [ "${#manifest_files[@]}" -eq 0 ]; then
+            echo "No Kubernetes manifests found in applications/gitops/base"
+            exit 1
+          fi
+
+          conftest test "${manifest_files[@]}" -p applications/policy

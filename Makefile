@@ -3,7 +3,7 @@ ENV ?= dev
 SERVICE ?= sample-service
 TAG ?= latest
 
-.PHONY: help build test synth platform-check platform-plan platform-apply app-bootstrap app-deploy platform-progress
+.PHONY: help build test synth platform-check platform-plan platform-apply app-bootstrap app-deploy app-policy-test platform-progress
 
 help:
 	@echo "make build                      # Build TypeScript"
@@ -14,6 +14,7 @@ help:
 	@echo "make platform-apply ENV=dev     # Apply platform changes"
 	@echo "make app-bootstrap SERVICE=name # Bootstrap app from template"
 	@echo "make app-deploy ENV=dev SERVICE=name TAG=v1.0.0"
+	@echo "make app-policy-test            # Run local policy bundle checks"
 	@echo "make platform-progress          # Show platform-as-product progress tracker"
 
 build:
@@ -43,6 +44,10 @@ app-bootstrap:
 app-deploy:
 	@echo "[app-deploy] ENV=$(ENV) SERVICE=$(SERVICE) TAG=$(TAG)"
 	@echo "Update GitOps manifest tag and let Argo CD reconcile"
+
+app-policy-test:
+	@echo "[app-policy-test] run conftest against applications/gitops/base with applications/policy"
+	conftest test applications/gitops/base/*.yaml -p applications/policy
 
 platform-progress:
 	@cat docs/platform-product-progress.md
