@@ -35,6 +35,20 @@ jobs:
 
           ./kubeconform -strict -summary "${manifest_files[@]}"
 
-      - name: Policy test placeholder (OPA/Kyverno)
+      - name: Policy checks with Conftest
+        shell: bash
         run: |
-          echo "Run conftest / kyverno CLI checks here"
+          set -euo pipefail
+
+          curl -sSL -o conftest.tar.gz \
+            https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_$(uname -s)_$(uname -m).tar.gz
+          tar -xzf conftest.tar.gz conftest
+
+          mapfile -t manifest_files < <(find applications/gitops/base -type f \( -name '*.yaml' -o -name '*.yml' \) | sort)
+
+          if [ "${#manifest_files[@]}" -eq 0 ]; then
+            echo "No Kubernetes manifests found in applications/gitops/base"
+            exit 1
+          fi
+
+          ./conftest test "${manifest_files[@]}" -p applications/policy

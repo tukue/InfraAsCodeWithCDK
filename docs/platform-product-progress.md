@@ -1,6 +1,6 @@
 # Platform as a Product Progress Tracker
 
-_Last updated: 2026-03-24_
+_Last updated: 2026-03-26_
 
 ## Delivery status snapshot
 
@@ -12,7 +12,7 @@ _Last updated: 2026-03-24_
 | App GitOps guardrails | ✅ Complete | 100% | kubeconform validation enabled and fail-fast behavior enforced. |
 | Secure-by-default CDK sample hardening | ✅ Complete | 100% | KMS, VPC, DLQ, IAM auth, caching, encrypted logs implemented. |
 | Environment overlays (dev/stage/prod) | 🟡 In Progress | 40% | Structure exists; env-specific manifests and policy sets pending. |
-| Policy-as-code enforcement (OPA/Kyverno) | 🟡 In Progress | 30% | Placeholder step exists; enforceable policy bundles pending. |
+| Policy-as-code enforcement (OPA/Kyverno) | 🟡 In Progress | 60% | Conftest policy bundle and CI enforcement added for deployment security/image/resource guardrails. |
 | Observability productization | 🟡 In Progress | 35% | Architecture defined; Prometheus/Grafana/Loki/OTel deployments pending. |
 | EKS + Argo CD platform runtime | ⏳ Planned | 20% | Target model documented; implementation modules still to be added. |
 | Backstage portal deployment | ⏳ Planned | 15% | Template exists; portal deployment and catalog automation pending. |
@@ -29,7 +29,7 @@ _Last updated: 2026-03-24_
 
 1. Implement EKS runtime module under `platform/modules/eks` and bootstrap cluster add-ons.
 2. Stand up Argo CD in `platform/services/argocd` with app-of-apps model.
-3. Add policy bundles and CI checks (`conftest` and/or `kyverno apply`) in `app-gitops-guardrails`.
+3. Expand policy bundle coverage beyond Deployment controls (Ingress, NetworkPolicy, PodDisruptionBudget).
 4. Add observability baseline (Prometheus, Grafana, Loki, OpenTelemetry Collector).
 5. Expand service repo structure with CI, Dockerfile, Helm chart, and SLO/runbook assets.
 
