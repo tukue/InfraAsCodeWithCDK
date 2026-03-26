@@ -35,14 +35,18 @@ jobs:
 
           ./kubeconform -strict -summary "${manifest_files[@]}"
 
+      - name: Setup Go for Conftest install
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
       - name: Policy checks with Conftest
         shell: bash
         run: |
           set -euo pipefail
 
-          curl -sSL -o conftest.tar.gz \
-            https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_$(uname -s)_$(uname -m).tar.gz
-          tar -xzf conftest.tar.gz conftest
+          go install github.com/open-policy-agent/conftest@latest
+          export PATH="$PATH:$(go env GOPATH)/bin"
 
           mapfile -t manifest_files < <(find applications/gitops/base -type f \( -name '*.yaml' -o -name '*.yml' \) | sort)
 
@@ -51,4 +55,4 @@ jobs:
             exit 1
           fi
 
-          ./conftest test "${manifest_files[@]}" -p applications/policy
+          conftest test "${manifest_files[@]}" -p applications/policy
