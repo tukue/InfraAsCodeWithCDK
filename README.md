@@ -80,6 +80,7 @@ Review feedback and implemented fixes are tracked in:
 Track implementation maturity and next milestones in:
 
 - `docs/platform-product-progress.md`
+- `docs/platform-product-operating-model.md`
 
 ## Quick commands
 
