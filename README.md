@@ -68,6 +68,7 @@ Template ID: `recommended-path-k8s-service`
 See detailed architecture and workflows in:
 
 - `docs/platform-product-architecture.md`
+- `docs/oaas-implementation-flow.md`
 - `templates/service-catalog/template.yaml`
 
 
