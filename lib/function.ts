@@ -42,12 +42,12 @@ export const handler = async (
   event: APIGatewayEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
-  try {
-    const correlationId =
-      event.headers?.['x-correlation-id'] ||
-      event.headers?.['X-Correlation-Id'] ||
-      context.awsRequestId;
+  const correlationId =
+    event.headers?.['x-correlation-id'] ||
+    event.headers?.['X-Correlation-Id'] ||
+    context.awsRequestId;
 
+  try {
     log('INFO', 'request-received', {
       awsRequestId: context.awsRequestId,
       correlationId,
@@ -81,6 +81,7 @@ export const handler = async (
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
+        'x-correlation-id': correlationId,
       },
       body: JSON.stringify({ error: 'Internal Server Error' }),
     };

@@ -113,7 +113,7 @@ export class CdkAppStack extends cdk.Stack {
     });
 
     const lambdaAppLogs = new logs.LogGroup(this, 'LambdaApplicationLogs', {
-      logGroupName: `/aws/lambda/${lambda_backend.functionName}-application`,
+      logGroupName: `/aws/lambda/${lambda_backend.functionName}`,
       encryptionKey,
       retention: logs.RetentionDays.ONE_MONTH,
       removalPolicy: RemovalPolicy.RETAIN,
