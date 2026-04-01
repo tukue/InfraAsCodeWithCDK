@@ -28,7 +28,7 @@ Provide a platform-managed observability baseline for workloads so teams get act
 - Added an encrypted SNS topic (`ObservabilityAlarmTopic`) for alarm fan-out.
 - Wired core alarms to this topic to establish a shared notification mechanism.
 
-### 2) Golden signal alarms
+### 2) Recommended baseline recommendations for alarms
 
 - Added Lambda error alarm (sum errors over 5 minutes).
 - Added Lambda latency alarm (p95 duration over 2 seconds).

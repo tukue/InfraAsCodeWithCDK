@@ -36,7 +36,7 @@ _Last updated: 2026-04-01_
 ## Latest implementation increment
 
 - Added a concrete "observability as a service" baseline to the CDK sample stack:
-  - CloudWatch dashboard for API + Lambda golden signals.
+  - CloudWatch dashboard for API + Lambda recommended baseline telemetry signals.
   - Encrypted SNS-backed alarm fan-out for Lambda and API failures/latency.
   - Structured Lambda JSON logging and correlation-ID propagation.
 - See `docs/observability-as-a-service.md` for assessment details and rollout recommendations.
