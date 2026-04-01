@@ -1,6 +1,6 @@
 # Platform as a Product Progress Tracker
 
-_Last updated: 2026-03-26_
+_Last updated: 2026-04-01_
 
 ## Delivery status snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-03-26_
 | Secure-by-default CDK sample hardening | ✅ Complete | 100% | KMS, VPC, DLQ, IAM auth, caching, encrypted logs implemented. |
 | Environment overlays (dev/stage/prod) | 🟡 In Progress | 40% | Structure exists; env-specific manifests and policy sets pending. |
 | Policy-as-code enforcement (OPA/Kyverno) | 🟡 In Progress | 60% | Conftest policy bundle and CI enforcement added for deployment security/image/resource guardrails. |
-| Observability productization | 🟡 In Progress | 35% | Architecture defined; Prometheus/Grafana/Loki/OTel deployments pending. |
+| Observability productization | 🟡 In Progress | 60% | CloudWatch dashboard, alerts, and structured logging baseline implemented; Prometheus/Grafana/Loki/OTel deployments pending. |
 | EKS + Argo CD platform runtime | ⏳ Planned | 20% | Target model documented; implementation modules still to be added. |
 | Backstage portal deployment | ⏳ Planned | 15% | Template exists; portal deployment and catalog automation pending. |
 
@@ -32,6 +32,14 @@ _Last updated: 2026-03-26_
 3. Expand policy bundle coverage beyond Deployment controls (Ingress, NetworkPolicy, PodDisruptionBudget).
 4. Add observability baseline (Prometheus, Grafana, Loki, OpenTelemetry Collector).
 5. Expand service repo structure with CI, Dockerfile, Helm chart, and SLO/runbook assets.
+
+## Latest implementation increment
+
+- Added a concrete "observability as a service" baseline to the CDK sample stack:
+  - CloudWatch dashboard for API + Lambda golden signals.
+  - Encrypted SNS-backed alarm fan-out for Lambda and API failures/latency.
+  - Structured Lambda JSON logging and correlation-ID propagation.
+- See `docs/observability-as-a-service.md` for assessment details and rollout recommendations.
 
 ## Definition of done for next milestone
 
