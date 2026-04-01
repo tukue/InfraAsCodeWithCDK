@@ -56,7 +56,3 @@ Use this repository as an engagement artifact to communicate:
 - **Delivery plan**: phased implementation with visible checkpoints.
 - **Evidence of execution**: code, policies, templates, and telemetry defaults.
 - **Value realization**: KPIs tied to developer productivity and reliability outcomes.
-
-## Suggested profile statement
-
-> Platform Engineer (Consulting): I design and implement platform-as-a-product capabilities that improve developer experience, enforce secure defaults, and scale delivery through self-service, GitOps, policy-as-code, and observability.
