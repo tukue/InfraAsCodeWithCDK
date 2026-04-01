@@ -96,8 +96,13 @@ Progress from baseline to full open-source observability stack:
 
 ## Definition of done for OaaS flow
 
-- [ ] Shared alarms deployed and routed to owned notification channels.
-- [ ] Shared dashboard published and referenced in platform docs/runbooks.
-- [ ] Correlation ID visible in both success and error API responses.
-- [ ] Structured logs adopted in default service template.
-- [ ] OSS observability stack rollout plan mapped for dev/stage/prod.
+- [ ] Shared alarms deployed and routed to owned notification channels.  
+  _Status:_ Alarms and SNS topic are implemented; endpoint subscriptions/routing ownership still pending.
+- [x] Shared dashboard published and referenced in platform docs/runbooks.  
+  _Status:_ Dashboard is implemented and referenced through platform documentation/output exports.
+- [x] Correlation ID visible in both success and error API responses.  
+  _Status:_ `x-correlation-id` is returned in both 200 and 500 responses in the Lambda handler.
+- [ ] Structured logs adopted in default service template.  
+  _Status:_ Structured logs are implemented in the sample Lambda, but template-level adoption is still pending.
+- [ ] OSS observability stack rollout plan mapped for dev/stage/prod.  
+  _Status:_ Target stack and phased direction are documented; environment-specific implementation mapping remains pending.
