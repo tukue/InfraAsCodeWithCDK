@@ -14,6 +14,7 @@ _Last updated: 2026-04-01_
 | Environment overlays (dev/stage/prod) | 🟡 In Progress | 40% | Structure exists; env-specific manifests and policy sets pending. |
 | Policy-as-code enforcement (OPA/Kyverno) | 🟡 In Progress | 60% | Conftest policy bundle and CI enforcement added for deployment security/image/resource guardrails. |
 | Observability productization | 🟡 In Progress | 60% | CloudWatch dashboard, alerts, and structured logging baseline implemented; Prometheus/Grafana/Loki/OTel deployments pending. |
+| Consulting profile packaging | ✅ Complete | 100% | Consulting narrative, capability map, and portfolio positioning documentation added. |
 | EKS + Argo CD platform runtime | ⏳ Planned | 20% | Target model documented; implementation modules still to be added. |
 | Backstage portal deployment | ⏳ Planned | 15% | Template exists; portal deployment and catalog automation pending. |
 
