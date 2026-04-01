@@ -10,6 +10,9 @@ import * as kms from 'aws-cdk-lib/aws-kms';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as cwActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import * as sns from 'aws-cdk-lib/aws-sns';
 
 export class CdkAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -75,6 +78,8 @@ export class CdkAppStack extends cdk.Stack {
       environment: {
         DYNAMODB: dynamodb_table.tableName,
         NODE_OPTIONS: '--enable-source-maps',
+        APP_LOG_LEVEL: 'INFO',
+        SERVICE_NAME: 'demo-api',
       },
       environmentEncryption: encryptionKey,
       // Bundling options for esbuild
@@ -104,6 +109,13 @@ export class CdkAppStack extends cdk.Stack {
     const apiAccessLogs = new logs.LogGroup(this, 'ApiGatewayAccessLogs', {
       encryptionKey,
       retention: logs.RetentionDays.TWO_YEARS,
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+
+    const lambdaAppLogs = new logs.LogGroup(this, 'LambdaApplicationLogs', {
+      logGroupName: `/aws/lambda/${lambda_backend.functionName}`,
+      encryptionKey,
+      retention: logs.RetentionDays.ONE_MONTH,
       removalPolicy: RemovalPolicy.RETAIN,
     });
 
@@ -151,6 +163,84 @@ export class CdkAppStack extends cdk.Stack {
     items.addMethod('GET', rootIntegration);
     items.addMethod('POST', rootIntegration);
 
+    const alarmTopic = new sns.Topic(this, 'ObservabilityAlarmTopic', {
+      displayName: 'Platform Observability Alerts',
+      masterKey: encryptionKey,
+    });
+
+    const lambdaErrorsAlarm = new cloudwatch.Alarm(this, 'LambdaErrorsAlarm', {
+      metric: lambda_backend.metricErrors({
+        period: cdk.Duration.minutes(5),
+        statistic: 'sum',
+      }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      datapointsToAlarm: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      alarmDescription: 'Lambda function has errors in the last 5 minutes',
+    });
+
+    const lambdaDurationAlarm = new cloudwatch.Alarm(this, 'LambdaDurationP95Alarm', {
+      metric: lambda_backend.metricDuration({
+        period: cdk.Duration.minutes(5),
+        statistic: 'p95',
+      }),
+      threshold: 2000,
+      evaluationPeriods: 2,
+      datapointsToAlarm: 2,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      alarmDescription: 'Lambda p95 duration is above 2 seconds',
+    });
+
+    const api5xxAlarm = new cloudwatch.Alarm(this, 'Api5xxAlarm', {
+      metric: api.metricServerError({
+        period: cdk.Duration.minutes(5),
+        statistic: 'sum',
+      }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      datapointsToAlarm: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      alarmDescription: 'API Gateway has 5xx responses in the last 5 minutes',
+    });
+
+    lambdaErrorsAlarm.addAlarmAction(new cwActions.SnsAction(alarmTopic));
+    lambdaDurationAlarm.addAlarmAction(new cwActions.SnsAction(alarmTopic));
+    api5xxAlarm.addAlarmAction(new cwActions.SnsAction(alarmTopic));
+
+    const observabilityDashboard = new cloudwatch.Dashboard(this, 'PlatformObservabilityDashboard', {
+      dashboardName: `${cdk.Stack.of(this).stackName}-platform-observability`,
+    });
+
+    observabilityDashboard.addWidgets(
+      new cloudwatch.GraphWidget({
+        title: 'Lambda Invocations / Errors',
+        left: [lambda_backend.metricInvocations(), lambda_backend.metricErrors()],
+        width: 12,
+      }),
+      new cloudwatch.GraphWidget({
+        title: 'Lambda Duration (p50/p95)',
+        left: [
+          lambda_backend.metricDuration({ statistic: 'p50' }),
+          lambda_backend.metricDuration({ statistic: 'p95' }),
+        ],
+        width: 12,
+      }),
+      new cloudwatch.GraphWidget({
+        title: 'API Gateway Requests / 5XX',
+        left: [api.metricCount(), api.metricServerError()],
+        width: 12,
+      }),
+      new cloudwatch.GraphWidget({
+        title: 'API Gateway Latency (p50/p95)',
+        left: [
+          api.metricLatency({ statistic: 'p50' }),
+          api.metricLatency({ statistic: 'p95' }),
+        ],
+        width: 12,
+      }),
+    );
+
     //  Stack Outputs
     // Export important information
     new cdk.CfnOutput(this, 'ApiUrl', {
@@ -163,6 +253,24 @@ export class CdkAppStack extends cdk.Stack {
       value: dynamodb_table.tableName,
       description: 'DynamoDB table name',
       exportName: 'tableName',
+    });
+
+    new cdk.CfnOutput(this, 'ObservabilityDashboardName', {
+      value: observabilityDashboard.dashboardName,
+      description: 'CloudWatch dashboard for platform observability',
+      exportName: 'observabilityDashboardName',
+    });
+
+    new cdk.CfnOutput(this, 'ObservabilityAlarmTopicArn', {
+      value: alarmTopic.topicArn,
+      description: 'SNS topic ARN for observability alarms',
+      exportName: 'observabilityAlarmTopicArn',
+    });
+
+    new cdk.CfnOutput(this, 'LambdaApplicationLogGroupName', {
+      value: lambdaAppLogs.logGroupName,
+      description: 'Application log group name used by Lambda structured logs',
+      exportName: 'lambdaApplicationLogGroupName',
     });
 
     //  Optional: Add Tags to Resources

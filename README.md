@@ -7,6 +7,8 @@ This repository has been transformed from a single-stack IaC project into a **Pl
 
 It now provides opinionated architecture, repository layout, templates, and delivery workflows to support a scalable **Internal Developer Platform (IDP)**.
 
+It is also curated as a **Platform Engineering consulting profile project** that demonstrates strategy, architecture, implementation, and measurable outcomes for platform transformations.
+
 ## What is included
 
 - A target platform architecture with:
@@ -66,6 +68,7 @@ Template ID: `recommended-path-k8s-service`
 See detailed architecture and workflows in:
 
 - `docs/platform-product-architecture.md`
+- `docs/oaas-implementation-flow.md`
 - `templates/service-catalog/template.yaml`
 
 
@@ -81,6 +84,7 @@ Track implementation maturity and next milestones in:
 
 - `docs/platform-product-progress.md`
 - `docs/platform-product-operating-model.md`
+- `docs/platform-engineering-consulting-profile.md`
 
 ## Quick commands
 
