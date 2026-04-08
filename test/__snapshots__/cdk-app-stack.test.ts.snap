@@ -1491,7 +1491,7 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
       "Properties": {
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-111111111111-us-east-1",
-          "S3Key": "259f6aa2227cb55cb6da0241624bf1f71284a9812d928e1259e0d29d66094760.zip",
+          "S3Key": "<ASSET_HASH>.zip",
         },
         "DeadLetterConfig": {
           "TargetArn": {
