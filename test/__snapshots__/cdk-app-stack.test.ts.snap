@@ -1,0 +1,1770 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CdkAppStack matches synthesized snapshot 1`] = `
+{
+  "Outputs": {
+    "ApiUrl": {
+      "Description": "API Gateway URL",
+      "Export": {
+        "Name": "apiUrl",
+      },
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "RestAPI1CC12F26",
+            },
+            ".execute-api.us-east-1.",
+            {
+              "Ref": "AWS::URLSuffix",
+            },
+            "/",
+            {
+              "Ref": "RestAPIDeploymentStageprod21CF62B9",
+            },
+            "/",
+          ],
+        ],
+      },
+    },
+    "DynamoDBTableName": {
+      "Description": "DynamoDB table name",
+      "Export": {
+        "Name": "tableName",
+      },
+      "Value": {
+        "Ref": "TableCD117FA1",
+      },
+    },
+    "LambdaApplicationLogGroupName": {
+      "Description": "Application log group name used by Lambda structured logs",
+      "Export": {
+        "Name": "lambdaApplicationLogGroupName",
+      },
+      "Value": {
+        "Ref": "LambdaApplicationLogs8BE494C3",
+      },
+    },
+    "ObservabilityAlarmTopicArn": {
+      "Description": "SNS topic ARN for observability alarms",
+      "Export": {
+        "Name": "observabilityAlarmTopicArn",
+      },
+      "Value": {
+        "Ref": "ObservabilityAlarmTopic4F30EB98",
+      },
+    },
+    "ObservabilityDashboardName": {
+      "Description": "CloudWatch dashboard for platform observability",
+      "Export": {
+        "Name": "observabilityDashboardName",
+      },
+      "Value": {
+        "Ref": "PlatformObservabilityDashboard2FE6E190",
+      },
+    },
+    "RestAPIEndpointB14C3C54": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "RestAPI1CC12F26",
+            },
+            ".execute-api.us-east-1.",
+            {
+              "Ref": "AWS::URLSuffix",
+            },
+            "/",
+            {
+              "Ref": "RestAPIDeploymentStageprod21CF62B9",
+            },
+            "/",
+          ],
+        ],
+      },
+    },
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "Api5xxAlarm31F257DC": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "ObservabilityAlarmTopic4F30EB98",
+          },
+        ],
+        "AlarmDescription": "API Gateway has 5xx responses in the last 5 minutes",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "DatapointsToAlarm": 1,
+        "Dimensions": [
+          {
+            "Name": "ApiName",
+            "Value": "Demo API",
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "5XXError",
+        "Namespace": "AWS/ApiGateway",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ApiGatewayAccessLogsFB871B4C": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "KmsKeyId": {
+          "Fn::GetAtt": [
+            "PlatformDataKey145DD809",
+            "Arn",
+          ],
+        },
+        "RetentionInDays": 731,
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "AppVpc80F1F7F9": {
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "InstanceTenancy": "default",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::VPC",
+    },
+    "AppVpcIGW826A76F0": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::InternetGateway",
+    },
+    "AppVpcVPCGW1D33210A": {
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "AppVpcIGW826A76F0",
+        },
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+    },
+    "AppVpcprivateSubnet1DefaultRoute57A63F17": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "AppVpcpublicSubnet1NATGateway9E7EC93F",
+        },
+        "RouteTableId": {
+          "Ref": "AppVpcprivateSubnet1RouteTable6494272F",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "AppVpcprivateSubnet1RouteTable6494272F": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/privateSubnet1",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "AppVpcprivateSubnet1RouteTableAssociation4118B1BE": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AppVpcprivateSubnet1RouteTable6494272F",
+        },
+        "SubnetId": {
+          "Ref": "AppVpcprivateSubnet1Subnet8CF47DFB",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "AppVpcprivateSubnet1Subnet8CF47DFB": {
+      "Properties": {
+        "AvailabilityZone": "dummy1a",
+        "CidrBlock": "10.0.2.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "private",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private",
+          },
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/privateSubnet1",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "AppVpcprivateSubnet2DefaultRoute4128D3F7": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "AppVpcpublicSubnet1NATGateway9E7EC93F",
+        },
+        "RouteTableId": {
+          "Ref": "AppVpcprivateSubnet2RouteTableC4E83AEF",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "AppVpcprivateSubnet2RouteTableAssociation35EA2B1E": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AppVpcprivateSubnet2RouteTableC4E83AEF",
+        },
+        "SubnetId": {
+          "Ref": "AppVpcprivateSubnet2Subnet2BB4B216",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "AppVpcprivateSubnet2RouteTableC4E83AEF": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/privateSubnet2",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "AppVpcprivateSubnet2Subnet2BB4B216": {
+      "Properties": {
+        "AvailabilityZone": "dummy1b",
+        "CidrBlock": "10.0.3.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "private",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private",
+          },
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/privateSubnet2",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "AppVpcpublicSubnet1DefaultRouteE576D94C": {
+      "DependsOn": [
+        "AppVpcVPCGW1D33210A",
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AppVpcIGW826A76F0",
+        },
+        "RouteTableId": {
+          "Ref": "AppVpcpublicSubnet1RouteTableF902084E",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "AppVpcpublicSubnet1EIP42F76984": {
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/publicSubnet1",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::EIP",
+    },
+    "AppVpcpublicSubnet1NATGateway9E7EC93F": {
+      "DependsOn": [
+        "AppVpcpublicSubnet1DefaultRouteE576D94C",
+        "AppVpcpublicSubnet1RouteTableAssociation1AC5573B",
+      ],
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "AppVpcpublicSubnet1EIP42F76984",
+            "AllocationId",
+          ],
+        },
+        "SubnetId": {
+          "Ref": "AppVpcpublicSubnet1Subnet8772DAEA",
+        },
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/publicSubnet1",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::NatGateway",
+    },
+    "AppVpcpublicSubnet1RouteTableAssociation1AC5573B": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AppVpcpublicSubnet1RouteTableF902084E",
+        },
+        "SubnetId": {
+          "Ref": "AppVpcpublicSubnet1Subnet8772DAEA",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "AppVpcpublicSubnet1RouteTableF902084E": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/publicSubnet1",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "AppVpcpublicSubnet1Subnet8772DAEA": {
+      "Properties": {
+        "AvailabilityZone": "dummy1a",
+        "CidrBlock": "10.0.0.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "public",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public",
+          },
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/publicSubnet1",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "AppVpcpublicSubnet2DefaultRouteBA859B08": {
+      "DependsOn": [
+        "AppVpcVPCGW1D33210A",
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AppVpcIGW826A76F0",
+        },
+        "RouteTableId": {
+          "Ref": "AppVpcpublicSubnet2RouteTable82F17977",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "AppVpcpublicSubnet2RouteTable82F17977": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/publicSubnet2",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "AppVpcpublicSubnet2RouteTableAssociationAFB1BC14": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AppVpcpublicSubnet2RouteTable82F17977",
+        },
+        "SubnetId": {
+          "Ref": "AppVpcpublicSubnet2SubnetE41E6C0A",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "AppVpcpublicSubnet2SubnetE41E6C0A": {
+      "Properties": {
+        "AvailabilityZone": "dummy1b",
+        "CidrBlock": "10.0.1.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "public",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public",
+          },
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Name",
+            "Value": "SnapshotStack/AppVpc/publicSubnet2",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "LambdaApplicationLogs8BE494C3": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "KmsKeyId": {
+          "Fn::GetAtt": [
+            "PlatformDataKey145DD809",
+            "Arn",
+          ],
+        },
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "functionF19B1A04",
+              },
+            ],
+          ],
+        },
+        "RetentionInDays": 30,
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "LambdaDlq3949784F": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "KmsMasterKeyId": {
+          "Fn::GetAtt": [
+            "PlatformDataKey145DD809",
+            "Arn",
+          ],
+        },
+        "MessageRetentionPeriod": 1209600,
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "LambdaDurationP95Alarm77F8AEE3": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "ObservabilityAlarmTopic4F30EB98",
+          },
+        ],
+        "AlarmDescription": "Lambda p95 duration is above 2 seconds",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "DatapointsToAlarm": 2,
+        "Dimensions": [
+          {
+            "Name": "FunctionName",
+            "Value": {
+              "Ref": "functionF19B1A04",
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "ExtendedStatistic": "p95",
+        "MetricName": "Duration",
+        "Namespace": "AWS/Lambda",
+        "Period": 300,
+        "Threshold": 2000,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "LambdaErrorsAlarm8ED74A7D": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "ObservabilityAlarmTopic4F30EB98",
+          },
+        ],
+        "AlarmDescription": "Lambda function has errors in the last 5 minutes",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "DatapointsToAlarm": 1,
+        "Dimensions": [
+          {
+            "Name": "FunctionName",
+            "Value": {
+              "Ref": "functionF19B1A04",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "Errors",
+        "Namespace": "AWS/Lambda",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ObservabilityAlarmTopic4F30EB98": {
+      "Properties": {
+        "DisplayName": "Platform Observability Alerts",
+        "KmsMasterKeyId": {
+          "Fn::GetAtt": [
+            "PlatformDataKey145DD809",
+            "Arn",
+          ],
+        },
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+    "PlatformDataKey145DD809": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "Description": "CMK for DynamoDB, Lambda environment, and API access logs",
+        "EnableKeyRotation": true,
+        "KeyPolicy": {
+          "Statement": [
+            {
+              "Action": "kms:*",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::111111111111:root",
+                    ],
+                  ],
+                },
+              },
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::KMS::Key",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "PlatformObservabilityDashboard2FE6E190": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"widgets":[{"type":"metric","width":12,"height":6,"x":0,"y":0,"properties":{"view":"timeSeries","title":"Lambda Invocations / Errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Invocations","FunctionName","",
+              {
+                "Ref": "functionF19B1A04",
+              },
+              "",{"stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","",
+              {
+                "Ref": "functionF19B1A04",
+              },
+              "",{"stat":"Sum"}]],"yAxis":{}}},{"type":"metric","width":12,"height":6,"x":12,"y":0,"properties":{"view":"timeSeries","title":"Lambda Duration (p50/p95)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Duration","FunctionName","",
+              {
+                "Ref": "functionF19B1A04",
+              },
+              "",{"stat":"p50"}],["AWS/Lambda","Duration","FunctionName","",
+              {
+                "Ref": "functionF19B1A04",
+              },
+              "",{"stat":"p95"}]],"yAxis":{}}},{"type":"metric","width":12,"height":6,"x":0,"y":6,"properties":{"view":"timeSeries","title":"API Gateway Requests / 5XX","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApiGateway","Count","ApiName","Demo API",{"stat":"SampleCount"}],["AWS/ApiGateway","5XXError","ApiName","Demo API",{"stat":"Sum"}]],"yAxis":{}}},{"type":"metric","width":12,"height":6,"x":12,"y":6,"properties":{"view":"timeSeries","title":"API Gateway Latency (p50/p95)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApiGateway","Latency","ApiName","Demo API",{"stat":"p50"}],["AWS/ApiGateway","Latency","ApiName","Demo API",{"stat":"p95"}]],"yAxis":{}}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "SnapshotStack-platform-observability",
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
+    "RestAPI1CC12F26": {
+      "Properties": {
+        "Description": "Demo API with Lambda and DynamoDB",
+        "Name": "Demo API",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::ApiGateway::RestApi",
+    },
+    "RestAPIAccountB5481627": {
+      "DeletionPolicy": "Retain",
+      "DependsOn": [
+        "RestAPI1CC12F26",
+      ],
+      "Properties": {
+        "CloudWatchRoleArn": {
+          "Fn::GetAtt": [
+            "RestAPICloudWatchRole025FE33D",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::ApiGateway::Account",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "RestAPICloudWatchRole025FE33D": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
+              ],
+            ],
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "RestAPIDeploymentD35A5380dc5fde4fc47fdd1e8c0d8c911c4c286a": {
+      "DependsOn": [
+        "RestAPIGET232BCD01",
+        "RestAPIitemsGET9E4F800F",
+        "RestAPIitemsOPTIONS0CA321DE",
+        "RestAPIitemsPOSTEAB94500",
+        "RestAPIitems078C62B7",
+        "RestAPIOPTIONS3271A002",
+        "RestAPIPOST162617E1",
+      ],
+      "Properties": {
+        "Description": "Demo API with Lambda and DynamoDB",
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Deployment",
+    },
+    "RestAPIDeploymentStageprod21CF62B9": {
+      "DependsOn": [
+        "RestAPIAccountB5481627",
+      ],
+      "Properties": {
+        "AccessLogSetting": {
+          "DestinationArn": {
+            "Fn::GetAtt": [
+              "ApiGatewayAccessLogsFB871B4C",
+              "Arn",
+            ],
+          },
+          "Format": "{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","user":"$context.identity.user","caller":"$context.identity.caller","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}",
+        },
+        "CacheClusterEnabled": true,
+        "CacheClusterSize": "0.5",
+        "DeploymentId": {
+          "Ref": "RestAPIDeploymentD35A5380dc5fde4fc47fdd1e8c0d8c911c4c286a",
+        },
+        "MethodSettings": [
+          {
+            "CachingEnabled": true,
+            "DataTraceEnabled": true,
+            "HttpMethod": "*",
+            "LoggingLevel": "INFO",
+            "ResourcePath": "/*",
+          },
+        ],
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+        "StageName": "prod",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "TracingEnabled": true,
+      },
+      "Type": "AWS::ApiGateway::Stage",
+    },
+    "RestAPIGET232BCD01": {
+      "Properties": {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "GET",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "functionF19B1A04",
+                    "Arn",
+                  ],
+                },
+                "/invocations",
+              ],
+            ],
+          },
+        },
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "RestAPI1CC12F26",
+            "RootResourceId",
+          ],
+        },
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "RestAPIGETApiPermissionSnapshotStackRestAPI4DF0168CGET65BD8774": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/",
+              {
+                "Ref": "RestAPIDeploymentStageprod21CF62B9",
+              },
+              "/GET/",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIGETApiPermissionTestSnapshotStackRestAPI4DF0168CGET01770C7A": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/test-invoke-stage/GET/",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIOPTIONS3271A002": {
+      "Properties": {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Max-Age": "'86400'",
+              },
+              "StatusCode": "204",
+            },
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }",
+          },
+          "Type": "MOCK",
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Max-Age": true,
+            },
+            "StatusCode": "204",
+          },
+        ],
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "RestAPI1CC12F26",
+            "RootResourceId",
+          ],
+        },
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "RestAPIPOST162617E1": {
+      "Properties": {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "POST",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "functionF19B1A04",
+                    "Arn",
+                  ],
+                },
+                "/invocations",
+              ],
+            ],
+          },
+        },
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "RestAPI1CC12F26",
+            "RootResourceId",
+          ],
+        },
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "RestAPIPOSTApiPermissionSnapshotStackRestAPI4DF0168CPOSTF937E6E3": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/",
+              {
+                "Ref": "RestAPIDeploymentStageprod21CF62B9",
+              },
+              "/POST/",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIPOSTApiPermissionTestSnapshotStackRestAPI4DF0168CPOST59E0DDC4": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/test-invoke-stage/POST/",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIitems078C62B7": {
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "RestAPI1CC12F26",
+            "RootResourceId",
+          ],
+        },
+        "PathPart": "items",
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Resource",
+    },
+    "RestAPIitemsGET9E4F800F": {
+      "Properties": {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "GET",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "functionF19B1A04",
+                    "Arn",
+                  ],
+                },
+                "/invocations",
+              ],
+            ],
+          },
+        },
+        "ResourceId": {
+          "Ref": "RestAPIitems078C62B7",
+        },
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "RestAPIitemsGETApiPermissionSnapshotStackRestAPI4DF0168CGETitems0D4C8163": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/",
+              {
+                "Ref": "RestAPIDeploymentStageprod21CF62B9",
+              },
+              "/GET/items",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIitemsGETApiPermissionTestSnapshotStackRestAPI4DF0168CGETitemsB9695D92": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/test-invoke-stage/GET/items",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIitemsOPTIONS0CA321DE": {
+      "Properties": {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Max-Age": "'86400'",
+              },
+              "StatusCode": "204",
+            },
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }",
+          },
+          "Type": "MOCK",
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Max-Age": true,
+            },
+            "StatusCode": "204",
+          },
+        ],
+        "ResourceId": {
+          "Ref": "RestAPIitems078C62B7",
+        },
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "RestAPIitemsPOSTApiPermissionSnapshotStackRestAPI4DF0168CPOSTitems931AAFF1": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/",
+              {
+                "Ref": "RestAPIDeploymentStageprod21CF62B9",
+              },
+              "/POST/items",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIitemsPOSTApiPermissionTestSnapshotStackRestAPI4DF0168CPOSTitems025026F8": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "functionF19B1A04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:111111111111:",
+              {
+                "Ref": "RestAPI1CC12F26",
+              },
+              "/test-invoke-stage/POST/items",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "RestAPIitemsPOSTEAB94500": {
+      "Properties": {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "POST",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "functionF19B1A04",
+                    "Arn",
+                  ],
+                },
+                "/invocations",
+              ],
+            ],
+          },
+        },
+        "ResourceId": {
+          "Ref": "RestAPIitems078C62B7",
+        },
+        "RestApiId": {
+          "Ref": "RestAPI1CC12F26",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "TableCD117FA1": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "PointInTimeRecoverySpecification": {
+          "PointInTimeRecoveryEnabled": true,
+        },
+        "SSESpecification": {
+          "KMSMasterKeyId": {
+            "Fn::GetAtt": [
+              "PlatformDataKey145DD809",
+              "Arn",
+            ],
+          },
+          "SSEEnabled": true,
+          "SSEType": "KMS",
+        },
+        "TableName": "DemoTable",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "functionF19B1A04": {
+      "DependsOn": [
+        "AppVpcprivateSubnet1DefaultRoute57A63F17",
+        "AppVpcprivateSubnet1RouteTableAssociation4118B1BE",
+        "AppVpcprivateSubnet2DefaultRoute4128D3F7",
+        "AppVpcprivateSubnet2RouteTableAssociation35EA2B1E",
+        "functionServiceRoleDefaultPolicy5ACF569A",
+        "functionServiceRoleEF216095",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-111111111111-us-east-1",
+          "S3Key": "259f6aa2227cb55cb6da0241624bf1f71284a9812d928e1259e0d29d66094760.zip",
+        },
+        "DeadLetterConfig": {
+          "TargetArn": {
+            "Fn::GetAtt": [
+              "LambdaDlq3949784F",
+              "Arn",
+            ],
+          },
+        },
+        "Environment": {
+          "Variables": {
+            "APP_LOG_LEVEL": "INFO",
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "DYNAMODB": {
+              "Ref": "TableCD117FA1",
+            },
+            "NODE_OPTIONS": "--enable-source-maps",
+            "SERVICE_NAME": "demo-api",
+          },
+        },
+        "Handler": "index.handler",
+        "KmsKeyArn": {
+          "Fn::GetAtt": [
+            "PlatformDataKey145DD809",
+            "Arn",
+          ],
+        },
+        "MemorySize": 1024,
+        "ReservedConcurrentExecutions": 10,
+        "Role": {
+          "Fn::GetAtt": [
+            "functionServiceRoleEF216095",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs18.x",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "Timeout": 30,
+        "TracingConfig": {
+          "Mode": "Active",
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Fn::GetAtt": [
+                "functionSecurityGroup698076D7",
+                "GroupId",
+              ],
+            },
+          ],
+          "SubnetIds": [
+            {
+              "Ref": "AppVpcprivateSubnet1Subnet8CF47DFB",
+            },
+            {
+              "Ref": "AppVpcprivateSubnet2Subnet2BB4B216",
+            },
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "functionSecurityGroup698076D7": {
+      "DependsOn": [
+        "AppVpcprivateSubnet1DefaultRoute57A63F17",
+        "AppVpcprivateSubnet1RouteTableAssociation4118B1BE",
+        "AppVpcprivateSubnet2DefaultRoute4128D3F7",
+        "AppVpcprivateSubnet2RouteTableAssociation35EA2B1E",
+      ],
+      "Properties": {
+        "GroupDescription": "Automatic security group for Lambda Function SnapshotStackfunctionAB2CA62C",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+        "VpcId": {
+          "Ref": "AppVpc80F1F7F9",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "functionServiceRoleDefaultPolicy5ACF569A": {
+      "DependsOn": [
+        "AppVpcprivateSubnet1DefaultRoute57A63F17",
+        "AppVpcprivateSubnet1RouteTableAssociation4118B1BE",
+        "AppVpcprivateSubnet2DefaultRoute4128D3F7",
+        "AppVpcprivateSubnet2RouteTableAssociation35EA2B1E",
+      ],
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sqs:SendMessage",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "LambdaDlq3949784F",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "PlatformDataKey145DD809",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TableCD117FA1",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "functionServiceRoleDefaultPolicy5ACF569A",
+        "Roles": [
+          {
+            "Ref": "functionServiceRoleEF216095",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "functionServiceRoleEF216095": {
+      "DependsOn": [
+        "AppVpcprivateSubnet1DefaultRoute57A63F17",
+        "AppVpcprivateSubnet1RouteTableAssociation4118B1BE",
+        "AppVpcprivateSubnet2DefaultRoute4128D3F7",
+        "AppVpcprivateSubnet2RouteTableAssociation35EA2B1E",
+      ],
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
+              ],
+            ],
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development",
+          },
+          {
+            "Key": "Project",
+            "Value": "DemoAPI",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;

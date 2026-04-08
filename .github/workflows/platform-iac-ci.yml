@@ -7,6 +7,10 @@ on:
       - 'platform/**'
       - 'lib/**'
       - 'bin/**'
+      - 'test/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'jest.config.js'
       - '.github/workflows/platform-iac-ci.yml'
 
 permissions:
@@ -27,11 +31,14 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Format check
+      - name: TypeScript build
         run: npm run build
 
+      - name: Unit and snapshot tests
+        run: npm test -- --ci
+
       - name: CDK synth
-        run: npx cdk synth
+        run: npm run synth
 
       - name: Static security scan (Checkov)
         uses: bridgecrewio/checkov-action@v12
