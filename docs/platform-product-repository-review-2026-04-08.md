@@ -133,7 +133,7 @@ Trade-off: monorepo improves discoverability and shared tooling; independent rep
 
 ## 5) Prioritized improvement plan
 
-### Quick wins (0–30 days)
+### Quick wins
 
 - Define and publish platform product contract:
   - supported personas,
@@ -145,14 +145,14 @@ Trade-off: monorepo improves discoverability and shared tooling; independent rep
 - Create one golden-path construct (`ApiLambdaDynamoService`) and one example app consuming it.
 - Add typed environment config with schema validation and fail-fast errors.
 
-### Medium-term improvements (1–2 quarters)
+### Medium-term improvements
 
 - Split code into internal packages (`platform-constructs`, `platform-config`, `platform-policies`).
 - Implement multi-account deployment orchestration with clear promotion flow (dev → stage → prod).
 - Add automated docs generation for constructs and usage examples.
 - Introduce drift detection and scheduled compliance scans.
 
-### Long-term maturity (2+ quarters)
+### Long-term platform maturity steps
 
 - Backstage plugin integration for platform API catalog + scorecards.
 - Progressive delivery support (feature flags, canary/blue-green patterns).
