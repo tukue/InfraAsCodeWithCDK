@@ -85,6 +85,7 @@ Track implementation maturity and next milestones in:
 - `docs/platform-product-progress.md`
 - `docs/platform-product-operating-model.md`
 - `docs/platform-engineering-consulting-profile.md`
+- `docs/platform-product-repository-review-2026-04-08.md`
 
 ## Quick commands
 
