@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   quality-gates:
@@ -45,4 +46,22 @@ jobs:
         with:
           directory: .
           framework: cloudformation,terraform,github_actions
+          soft_fail: false
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
           quiet: true
+
+      - name: Upload Checkov SARIF report
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+      - name: Static security scan (Trivy IaC misconfigurations)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: config
+          scan-ref: .
+          hide-progress: true
+          severity: CRITICAL,HIGH
+          exit-code: '1'

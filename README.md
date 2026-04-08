@@ -18,7 +18,7 @@ It is also curated as a **Platform Engineering consulting profile project** that
   - Secure-by-default guardrails and policy checks
 - Repository structure for multi-team and multi-environment operation
 - Backstage software template example for self-service service creation
-- CI pipeline for platform IaC quality gates (fmt/validate/lint/security)
+- CI pipeline for platform IaC quality gates (build/test/synth + Checkov + Trivy security scans)
 - GitOps-oriented app delivery guardrails
 - OPA/Conftest policy bundle for Kubernetes deployment security checks
 - Day-2 DX helpers via `Makefile`
