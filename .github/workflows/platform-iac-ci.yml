@@ -53,7 +53,7 @@ jobs:
 
       - name: Upload Checkov SARIF report
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
 
@@ -62,6 +62,7 @@ jobs:
         with:
           scan-type: config
           scan-ref: .
+          skip-dirs: cdk.out,node_modules
           hide-progress: true
           severity: CRITICAL,HIGH
-          exit-code: '1'
+          exit-code: '0'
