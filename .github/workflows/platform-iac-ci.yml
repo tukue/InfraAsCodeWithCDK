@@ -58,7 +58,7 @@ jobs:
           sarif_file: results.sarif
 
       - name: Static security scan (Trivy IaC misconfigurations)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: config
           scan-ref: .
