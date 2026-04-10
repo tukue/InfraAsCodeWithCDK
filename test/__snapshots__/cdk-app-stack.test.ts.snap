@@ -134,11 +134,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "RetentionInDays": 731,
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -154,15 +166,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "InstanceTenancy": "default",
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -173,15 +197,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
       "Properties": {
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -215,15 +251,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
       "Properties": {
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/privateSubnet1",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -259,15 +307,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
             "Value": "Private",
           },
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/privateSubnet1",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -304,15 +364,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
       "Properties": {
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/privateSubnet2",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -337,15 +409,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
             "Value": "Private",
           },
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/privateSubnet2",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -375,15 +459,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "Domain": "vpc",
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/publicSubnet1",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -407,15 +503,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         },
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/publicSubnet1",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -437,15 +545,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
       "Properties": {
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/publicSubnet1",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -470,15 +590,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
             "Value": "Public",
           },
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/publicSubnet1",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -507,15 +639,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
       "Properties": {
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/publicSubnet2",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -551,15 +695,27 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
             "Value": "Public",
           },
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
+          },
+          {
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
           },
           {
             "Key": "Name",
             "Value": "SnapshotStack/AppVpc/publicSubnet2",
           },
           {
-            "Key": "Project",
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -592,11 +748,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "RetentionInDays": 30,
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -616,11 +784,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "MessageRetentionPeriod": 1209600,
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -695,11 +875,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         },
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -737,11 +929,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         },
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -801,11 +1005,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "Name": "Demo API",
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -859,11 +1075,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         ],
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -871,7 +1099,7 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
       "Type": "AWS::IAM::Role",
       "UpdateReplacePolicy": "Retain",
     },
-    "RestAPIDeploymentD35A5380dc5fde4fc47fdd1e8c0d8c911c4c286a": {
+    "RestAPIDeploymentD35A538022916227e2890c9cef2e63fbe89caa4d": {
       "DependsOn": [
         "RestAPIGET232BCD01",
         "RestAPIitemsGET9E4F800F",
@@ -906,7 +1134,7 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "CacheClusterEnabled": true,
         "CacheClusterSize": "0.5",
         "DeploymentId": {
-          "Ref": "RestAPIDeploymentD35A5380dc5fde4fc47fdd1e8c0d8c911c4c286a",
+          "Ref": "RestAPIDeploymentD35A538022916227e2890c9cef2e63fbe89caa4d",
         },
         "MethodSettings": [
           {
@@ -923,11 +1151,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "StageName": "prod",
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -1467,11 +1707,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "TableName": "DemoTable",
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -1530,11 +1782,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         "Runtime": "nodejs18.x",
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -1581,11 +1845,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         ],
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],
@@ -1727,11 +2003,23 @@ exports[`CdkAppStack matches synthesized snapshot 1`] = `
         ],
         "Tags": [
           {
-            "Key": "Environment",
-            "Value": "Development",
+            "Key": "cost-center",
+            "Value": "ENG-PLATFORM",
           },
           {
-            "Key": "Project",
+            "Key": "data-classification",
+            "Value": "internal",
+          },
+          {
+            "Key": "environment",
+            "Value": "dev",
+          },
+          {
+            "Key": "owner",
+            "Value": "platform-engineering",
+          },
+          {
+            "Key": "project",
             "Value": "DemoAPI",
           },
         ],

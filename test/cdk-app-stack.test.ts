@@ -1,11 +1,13 @@
 import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { CdkAppStack } from '../lib/cdk-app-stack';
+import { loadPlatformConfig } from '../lib/platform-config';
 
 const buildTemplate = (stackName: string): Template => {
   const app = new cdk.App();
   const stack = new CdkAppStack(app, stackName, {
     env: { account: '111111111111', region: 'us-east-1' },
+    platformConfig: loadPlatformConfig('dev'),
   });
 
   return Template.fromStack(stack);
@@ -19,6 +21,21 @@ describe('CdkAppStack', () => {
     template.resourceCountIs('AWS::ApiGateway::RestApi', 1);
     template.resourceCountIs('AWS::DynamoDB::Table', 1);
     template.resourceCountIs('AWS::KMS::Key', 1);
+  });
+
+
+  test('applies required governance tags', () => {
+    const template = buildTemplate('TaggedStack');
+
+    template.hasResourceProperties('AWS::DynamoDB::Table', {
+      Tags: [
+        { Key: 'cost-center', Value: 'ENG-PLATFORM' },
+        { Key: 'data-classification', Value: 'internal' },
+        { Key: 'environment', Value: 'dev' },
+        { Key: 'owner', Value: 'platform-engineering' },
+        { Key: 'project', Value: 'DemoAPI' },
+      ],
+    });
   });
 
   test('matches synthesized snapshot', () => {
