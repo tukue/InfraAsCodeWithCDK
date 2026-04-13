@@ -33,7 +33,9 @@ export const resolvePlatformEnvironment = (value?: string): PlatformEnvironment 
   const normalized = value?.trim().toLowerCase();
 
   if (!normalized) {
-    return 'dev';
+    throw new Error(
+      'Platform environment must be explicitly specified via platformEnv context or PLATFORM_ENV. Allowed values: dev, stage, prod.',
+    );
   }
 
   if (normalized === 'dev' || normalized === 'stage' || normalized === 'prod') {

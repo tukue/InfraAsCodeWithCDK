@@ -14,6 +14,13 @@ const buildTemplate = (stackName: string): Template => {
 };
 
 describe('CdkAppStack', () => {
+
+  test('fails fast when environment is not specified', () => {
+    expect(() => loadPlatformConfig()).toThrow(
+      'Platform environment must be explicitly specified via platformEnv context or PLATFORM_ENV. Allowed values: dev, stage, prod.',
+    );
+  });
+
   test('creates core resources', () => {
     const template = buildTemplate('TestStack');
 
