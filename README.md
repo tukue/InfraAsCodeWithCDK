@@ -82,9 +82,10 @@ The CDK app now applies two productized guardrails from the platform review reco
 Set the environment explicitly with either CDK context or environment variable:
 
 ```bash
-npm run synth -- -c platformEnv=stage
-# or
-PLATFORM_ENV=prod npm run synth
+npm run synth                 # defaults to dev when PLATFORM_ENV is unset
+PLATFORM_ENV=stage npm run synth
+# or, direct CDK command
+npm run cdk -- synth -c platformEnv=prod
 ```
 
 ## Code review resolution
