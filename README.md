@@ -81,6 +81,8 @@ The CDK app now applies two productized guardrails from the platform review reco
 
 Set the environment with either CDK context or environment variable:
 
+Default local context in `cdk.json` is set to `dev` so `npm run synth` works out of the box; override it for stage/prod.
+
 ```bash
 npm run synth -- -c platformEnv=stage
 # or
