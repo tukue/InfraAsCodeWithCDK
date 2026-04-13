@@ -72,6 +72,22 @@ See detailed architecture and workflows in:
 - `templates/service-catalog/template.yaml`
 
 
+## Implemented platform product guardrails
+
+The CDK app now applies two productized guardrails from the platform review recommendations:
+
+- **Typed environment configuration** via `lib/platform-config.ts` with explicit `dev|stage|prod` validation and fail-fast errors for missing or invalid values.
+- **Mandatory governance tags** standardized at stack level and validated in tests for key resources: `environment`, `project`, `owner`, `cost-center`, and `data-classification`.
+
+Set the environment explicitly with either CDK context or environment variable:
+
+```bash
+npm run synth                 # defaults to dev when PLATFORM_ENV is unset
+PLATFORM_ENV=stage npm run synth
+# or, direct CDK command
+npm run cdk -- synth -c platformEnv=prod
+```
+
 ## Code review resolution
 
 Review feedback and implemented fixes are tracked in:

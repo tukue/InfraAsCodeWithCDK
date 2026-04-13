@@ -13,9 +13,14 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as cwActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as sns from 'aws-cdk-lib/aws-sns';
+import { PlatformConfig } from './platform-config';
+
+export interface CdkAppStackProps extends cdk.StackProps {
+  readonly platformConfig: PlatformConfig;
+}
 
 export class CdkAppStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: CdkAppStackProps) {
     super(scope, id, props);
 
     const encryptionKey = new kms.Key(this, 'PlatformDataKey', {
@@ -274,7 +279,10 @@ export class CdkAppStack extends cdk.Stack {
     });
 
     //  Optional: Add Tags to Resources
-    cdk.Tags.of(this).add('Environment', 'Development');
-    cdk.Tags.of(this).add('Project', 'DemoAPI');
+    cdk.Tags.of(this).add('environment', props.platformConfig.environment);
+    cdk.Tags.of(this).add('project', props.platformConfig.project);
+    cdk.Tags.of(this).add('owner', props.platformConfig.owner);
+    cdk.Tags.of(this).add('cost-center', props.platformConfig.costCenter);
+    cdk.Tags.of(this).add('data-classification', props.platformConfig.dataClassification);
   }
 }
