@@ -79,9 +79,7 @@ The CDK app now applies two productized guardrails from the platform review reco
 - **Typed environment configuration** via `lib/platform-config.ts` with explicit `dev|stage|prod` validation and fail-fast errors for missing or invalid values.
 - **Mandatory governance tags** standardized at stack level and validated in tests for key resources: `environment`, `project`, `owner`, `cost-center`, and `data-classification`.
 
-Set the environment with either CDK context or environment variable:
-
-Default local context in `cdk.json` is set to `dev` so `npm run synth` works out of the box; override it for stage/prod.
+Set the environment explicitly with either CDK context or environment variable:
 
 ```bash
 npm run synth -- -c platformEnv=stage
