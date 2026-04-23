@@ -1,116 +1,112 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import { RemovalPolicy } from 'aws-cdk-lib';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as gateway from 'aws-cdk-lib/aws-apigateway';
 import * as path from 'path';
+import * as cdk from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Construct } from 'constructs';
+
+type CdkAppStackProps = cdk.StackProps & {
+  stageName?: string;
+};
 
 export class CdkAppStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: CdkAppStackProps = {}) {
     super(scope, id, props);
 
-    //  DynamoDB Table Definition
-    const dynamodb_table = new dynamodb.Table(this, "Table", {
-      partitionKey: { 
-        name: "id", 
-        type: dynamodb.AttributeType.STRING 
+    const stageName = props.stageName ?? 'dev';
+    const isProduction = stageName === 'prod';
+
+    const table = new dynamodb.Table(this, 'ItemsTable', {
+      partitionKey: {
+        name: 'id',
+        type: dynamodb.AttributeType.STRING,
       },
-      // Table will be deleted when stack is destroyed
-      removalPolicy: RemovalPolicy.DESTROY,
-      // Optional: Enable point-in-time recovery
-      pointInTimeRecovery: true,
-      // Optional: Set billing mode
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      // Optional: Set table name explicitly
-      tableName: 'DemoTable',
+      pointInTimeRecovery: true,
+      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+      removalPolicy: isProduction ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
+      tableName: `demo-items-${stageName}`,
     });
 
-    //  Lambda Function Definition
-    const lambda_backend = new NodejsFunction(this, 'function', {
-      // Path to your Lambda function code
+    const backend = new NodejsFunction(this, 'BackendFunction', {
       entry: path.join(__dirname, 'function.ts'),
-      // Name of the exported handler function
       handler: 'handler',
-      // Runtime version
       runtime: lambda.Runtime.NODEJS_18_X,
-      // Environment variables available to function
       environment: {
-        DYNAMODB: dynamodb_table.tableName,
+        DYNAMODB: table.tableName,
         NODE_OPTIONS: '--enable-source-maps',
+        STAGE: stageName,
       },
-      // Bundling options for esbuild
       bundling: {
         minify: true,
         sourceMap: true,
         externalModules: ['aws-sdk'],
         target: 'node18',
       },
-      // Optional: Configure memory and timeout
       memorySize: 1024,
       timeout: cdk.Duration.seconds(30),
-      // Optional: Enable tracing
       tracing: lambda.Tracing.ACTIVE,
     });
 
-    //  Grant DynamoDB Permissions to Lambda
-    dynamodb_table.grantReadWriteData(lambda_backend.role!);
+    table.grantReadWriteData(backend);
 
-    // 4. API Gateway Definition
-    const api = new gateway.RestApi(this, "RestAPI", {
-      restApiName: "Demo API",
-      description: "Demo API with Lambda and DynamoDB",
-      // Configure CORS
+    const accessLogs = new logs.LogGroup(this, 'ApiGatewayAccessLogs', {
+      retention: logs.RetentionDays.ONE_MONTH,
+      removalPolicy: isProduction ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
+    });
+
+    const api = new apigateway.RestApi(this, 'RestApi', {
+      restApiName: `Demo API (${stageName})`,
+      description: 'Serverless API with Lambda and DynamoDB',
       defaultCorsPreflightOptions: {
-        allowOrigins: gateway.Cors.ALL_ORIGINS,
-        allowMethods: gateway.Cors.ALL_METHODS,
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
         allowHeaders: [
           'Content-Type',
           'X-Amz-Date',
           'Authorization',
           'X-Api-Key',
-          'X-Amz-Security-Token'
+          'X-Amz-Security-Token',
         ],
         maxAge: cdk.Duration.days(1),
       },
-      // Optional: Enable logging
       deployOptions: {
-        accessLogDestination: new gateway.LogGroupLogDestination(new cdk.aws_logs.LogGroup(this, 'ApiGatewayAccessLogs')),
-        accessLogFormat: gateway.AccessLogFormat.jsonWithStandardFields(),
-        loggingLevel: gateway.MethodLoggingLevel.INFO,
-        dataTraceEnabled: true,
+        stageName,
+        accessLogDestination: new apigateway.LogGroupLogDestination(accessLogs),
+        accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields(),
+        loggingLevel: apigateway.MethodLoggingLevel.INFO,
+        dataTraceEnabled: false,
         tracingEnabled: true,
       },
     });
 
-    //  API Resources and Methods
-    // Root resource
-    const rootIntegration = new gateway.LambdaIntegration(lambda_backend);
-    api.root.addMethod('GET', rootIntegration);
-    api.root.addMethod('POST', rootIntegration);
+    const integration = new apigateway.LambdaIntegration(backend);
 
-    // Optional: Add a specific resource path
+    api.root.addMethod('GET', integration);
+
+    const health = api.root.addResource('health');
+    health.addMethod('GET', integration);
+
     const items = api.root.addResource('items');
-    items.addMethod('GET', rootIntegration);
-    items.addMethod('POST', rootIntegration);
+    items.addMethod('GET', integration);
+    items.addMethod('POST', integration);
 
-    //  Stack Outputs
-    // Export important information
     new cdk.CfnOutput(this, 'ApiUrl', {
       value: api.url,
       description: 'API Gateway URL',
-      exportName: 'apiUrl',
+      exportName: `${this.stackName}-api-url`,
     });
 
     new cdk.CfnOutput(this, 'DynamoDBTableName', {
-      value: dynamodb_table.tableName,
+      value: table.tableName,
       description: 'DynamoDB table name',
-      exportName: 'tableName',
+      exportName: `${this.stackName}-table-name`,
     });
 
-    //  Optional: Add Tags to Resources
-    cdk.Tags.of(this).add('Environment', 'Development');
+    cdk.Tags.of(this).add('Environment', stageName);
     cdk.Tags.of(this).add('Project', 'DemoAPI');
   }
 }

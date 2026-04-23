@@ -1,0 +1,4 @@
+# Copy this file to terraform.tfvars or pass values with -var.
+vault_token    = "root"
+vault_username = "devuser"
+vault_password = "ChangeMe123!"

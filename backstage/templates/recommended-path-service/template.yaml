@@ -1,0 +1,92 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: recommended-path-service
+  title: Recommended Path Service
+  description: Scaffolds a service with CI, image delivery, Argo CD deployment, dashboards, alerts, and policy checks.
+  tags:
+    - recommended-path
+    - kubernetes
+    - argocd
+    - observability
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - title: Service metadata
+      required:
+        - name
+        - owner
+        - repoUrl
+        - imageRegistry
+      properties:
+        name:
+          title: Service name
+          type: string
+          description: Kebab-case service name used for the repository and runtime identifiers.
+          pattern: '^[a-z0-9-]+$'
+        description:
+          title: Description
+          type: string
+          default: Recommended path service scaffolded from Backstage.
+        owner:
+          title: Owner
+          type: string
+          description: Backstage group or user that owns the service.
+          ui:field: OwnerPicker
+        repoUrl:
+          title: Repository location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        imageRegistry:
+          title: GHCR namespace
+          type: string
+          description: GitHub Container Registry namespace, for example ghcr.io/acme-platform.
+          default: ghcr.io/acme-platform
+        kubeNamespace:
+          title: Kubernetes namespace
+          type: string
+          default: apps
+
+  steps:
+    - id: fetch-base
+      name: Fetch service skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          repo: ${{ parameters.repoUrl | parseRepoUrl }}
+          imageRegistry: ${{ parameters.imageRegistry }}
+          kubeNamespace: ${{ parameters.kubeNamespace }}
+
+    - id: publish
+      name: Publish repository
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        description: ${{ parameters.description }}
+        defaultBranch: main
+        protectDefaultBranch: true
+        repoVisibility: private
+
+    - id: register
+      name: Register in catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+  output:
+    links:
+      - title: Source repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}

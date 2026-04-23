@@ -1,75 +1,100 @@
 # InfraAsCodeWithCDK
 
-# Overview
-This project deploys a serverless application using AWS CDK with TypeScript, including API Gateway, Lambda, and DynamoDB.
+Serverless demo platform built with AWS CDK, API Gateway, Lambda, and DynamoDB. The repository now also includes a Backstage recommended path template that shows how platform teams can scaffold and deliver a service end to end.
+
+## Overview
+
+The stack deploys:
+
+- API Gateway REST API
+- Lambda function bundled from TypeScript
+- DynamoDB table for item storage
+- CloudWatch access logs and Lambda tracing
+
+Request flow:
+
+`Client -> API Gateway -> Lambda -> DynamoDB`
+
+## Backstage Recommended Path
+
+The repository now includes a concrete, simplified Backstage software template at [backstage/templates/recommended-path-service/template.yaml](/mnt/c/Users/tukue/InfraAsCodeWithCDK/backstage/templates/recommended-path-service/template.yaml).
+
+That template scaffolds one service repository with:
+
+- Service scaffold
+- GitHub Actions CI
+- GHCR image build and publish
+- Kubernetes manifest tag update on release
+- Argo CD application for deployment
+- Default Grafana dashboard and Prometheus alerts
+- OPA policy checks in CI
+
+The registered Backstage catalog entry for this repository lives at [catalog-info.yaml](/mnt/c/Users/tukue/InfraAsCodeWithCDK/catalog-info.yaml).
 
 ## Prerequisites
+
 - Node.js 18.x or later
-- AWS CLI configured
-- AWS CDK CLI (`npm install -g aws-cdk`)
+- AWS CLI configured with credentials for the target account
+- AWS CDK CLI installed globally: `npm install -g aws-cdk`
 
 ## Quick Start
 
-1. **Install dependencies**
+Install dependencies:
+
 ```bash
 npm install
+```
 
-AWS_ACCOUNT_ID=account-id
-AWS_REGION=aws-region
+Bootstrap the target environment the first time:
 
-Deploy
-cdk bootstrap   # First time only
-cdk deploy
+```bash
+cdk bootstrap
+```
 
-Stack Components
+Deploy the default `dev` stage:
 
-API Gateway REST API
-Lambda Function (Node.js)
-DynamoDB Table
-CloudWatch Logging   
+```bash
+npm run deploy
+```
 
-Request flow : 
+Deploy a named stage:
 
-Client → API Gateway → Lambda → DynamoDB
-↑ ↓ ↓ ↓
-└──────── Response ← Data ← Databasen
+```bash
+npm run cdk -- deploy --context stage=prod
+```
 
+## API Endpoints
 
+- `GET /` returns service metadata and the supported routes
+- `GET /health` returns a lightweight health response
+- `GET /items` lists items from DynamoDB
+- `POST /items` creates a new item
 
-Useful Commands
-npm run build   # Compile TypeScript
-npm run test    # Run tests
-cdk diff       # Compare changes
-cdk synth      # Generate CloudFormation
+Example request:
 
-API Endpoints
-GET /scan - Returns log stream name
+```bash
+curl -X POST "$API_URL/items" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"example item"}'
+```
 
-Security
-IAM authentication enabled
+## Useful Commands
 
-Environment variables for sensitive data
-AWS managed encryption
+```bash
+npm run build     # Compile TypeScript
+npm test          # Run tests
+npm run synth     # Generate CloudFormation
+npm run cdk -- diff
+```
 
+## Security and Operations
 
-## Security & Monitoring
-- API Gateway logs to CloudWatch
-- Lambda execution tracing with X-Ray
-- IAM roles with least privilege
-- CORS configured for API endpoints
-
-## Infrastructure as Code
-- Defined using AWS CDK in TypeScript
-- Automated deployment via CloudFormation
-- Environment-specific tagging
-  - Environment: Development
-  - Project: DemoAPI
+- DynamoDB uses AWS-managed encryption
+- Lambda tracing is enabled with AWS X-Ray
+- API Gateway access logs are enabled
+- Non-production tables are destroyed with the stack, production tables are retained
 
 ## Stack Outputs
+
 - API Gateway URL
 - DynamoDB table name
-
-## Scaling
-- Lambda: Auto-scales based on demand
-- DynamoDB: Pay-per-request auto-scaling
-- API Gateway: Handles scaling automatically 

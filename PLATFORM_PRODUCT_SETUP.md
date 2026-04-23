@@ -636,20 +636,34 @@ plugins:
 
 #### 4.2 Add Software Templates
 
-Create golden path templates for common services:
+Backstage templates are the center of the platform experience, so this repository now includes one simplified recommended path example instead of placeholder template ideas.
+
+Implemented assets:
 
 ```
+catalog-info.yaml
 backstage/
-├── templates/
-│   ├── lambda-service/
-│   │   ├── template.yaml
-│   │   ├── skeleton/
-│   │   └── README.md
-│   └── cdk-construct/
-│       ├── template.yaml
-│       ├── skeleton/
-│       └── README.md
+└── templates/
+    └── recommended-path-service/
+        ├── template.yaml
+        ├── README.md
+        └── skeleton/
+            ├── .github/workflows/
+            ├── deploy/
+            ├── gitops/argocd/
+            ├── observability/
+            └── policy/conftest/
 ```
+
+The recommended path service template covers:
+
+- Service scaffold
+- CI validation
+- Container image build and publish
+- Manifest tag update in Git
+- Argo CD deployment from GitOps state
+- Default dashboard and alert definitions
+- Policy checks for Kubernetes delivery artifacts
 
 #### 4.3 Configure CI/CD Integration
 
@@ -850,7 +864,7 @@ new cdk.aws_budgets.CfnBudget(this, 'PlatformBudget', {
 
 ### Platform Engineering Principles
 
-1. **Golden Paths**: Provide opinionated, automated workflows
+1. **Recommended Paths**: Provide opinionated, automated workflows
 2. **Self-Service**: Enable developers to provision resources independently
 3. **Documentation**: Keep docs updated and discoverable
 4. **Observability**: Monitor platform health and usage
