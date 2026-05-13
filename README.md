@@ -65,9 +65,11 @@ npm run cdk -- deploy --context stage=prod
 
 ## API Endpoints
 
-- `GET /` returns service metadata and the supported routes
+- `GET /` returns platform metadata and the supported routes
 - `GET /health` returns a lightweight health response
-- `GET /items` lists items from DynamoDB
+- `GET /platform` returns the platform-product contract and available capabilities
+- `GET /platform/recommended-path` returns the recommended-path delivery stages and template metadata
+- `GET /items` lists items from DynamoDB with `limit` and `cursor` pagination
 - `POST /items` creates a new item
 
 Example request:
@@ -76,6 +78,13 @@ Example request:
 curl -X POST "$API_URL/items" \
   -H "Content-Type: application/json" \
   -d '{"name":"example item"}'
+```
+
+List items with pagination:
+
+```bash
+curl "$API_URL/items?limit=25"
+curl "$API_URL/items?limit=25&cursor=$NEXT_CURSOR"
 ```
 
 ## Useful Commands
@@ -98,3 +107,5 @@ npm run cdk -- diff
 
 - API Gateway URL
 - DynamoDB table name
+- Backstage catalog entity reference
+- Recommended path template name

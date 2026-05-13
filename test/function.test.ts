@@ -15,6 +15,11 @@ describe('Lambda handler', () => {
     jest.resetModules();
     process.env.DYNAMODB = 'demo-items-test';
     process.env.STAGE = 'test';
+    process.env.CATALOG_ENTITY_REF = 'component:default/infra-as-code-with-cdk';
+    process.env.RECOMMENDED_PATH_TEMPLATE_NAME = 'recommended-path-service';
+    process.env.RECOMMENDED_PATH_TEMPLATE_PATH =
+      'backstage/templates/recommended-path-service/template.yaml';
+    process.env.RECOMMENDED_PATH_CATALOG_PATH = 'catalog-info.yaml';
     scanMock.mockReset();
     putMock.mockReset();
   });
@@ -42,6 +47,7 @@ describe('Lambda handler', () => {
           { id: '1', name: 'older', createdAt: '2024-01-01T00:00:00.000Z' },
           { id: '2', name: 'newer', createdAt: '2024-01-02T00:00:00.000Z' },
         ],
+        LastEvaluatedKey: { id: '2' },
       }),
     });
 
@@ -51,14 +57,217 @@ describe('Lambda handler', () => {
       httpMethod: 'GET',
       path: '/items',
       resource: '/items',
+      queryStringParameters: {
+        limit: '10',
+      },
     } as any);
 
     expect(response.statusCode).toBe(200);
+    expect(scanMock).toHaveBeenCalledWith({
+      TableName: 'demo-items-test',
+      Limit: 10,
+      ExclusiveStartKey: undefined,
+    });
     expect(JSON.parse(response.body)).toEqual({
       count: 2,
+      limit: 10,
+      nextCursor: Buffer.from(JSON.stringify({ id: '2' }), 'utf8').toString('base64url'),
       items: [
         { id: '2', name: 'newer', createdAt: '2024-01-02T00:00:00.000Z' },
         { id: '1', name: 'older', createdAt: '2024-01-01T00:00:00.000Z' },
+      ],
+    });
+  });
+
+  it('uses a default limit and decodes cursors for GET /items', async () => {
+    scanMock.mockReturnValue({
+      promise: jest.fn().mockResolvedValue({
+        Items: [],
+      }),
+    });
+
+    const cursor = Buffer.from(JSON.stringify({ id: 'previous' }), 'utf8').toString('base64url');
+    const { handler } = await import('../lib/function');
+
+    const response = await handler({
+      httpMethod: 'GET',
+      path: '/items',
+      resource: '/items',
+      queryStringParameters: {
+        cursor,
+      },
+    } as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(scanMock).toHaveBeenCalledWith({
+      TableName: 'demo-items-test',
+      Limit: 25,
+      ExclusiveStartKey: {
+        id: 'previous',
+      },
+    });
+    expect(JSON.parse(response.body)).toEqual({
+      count: 0,
+      items: [],
+      limit: 25,
+    });
+  });
+
+  it('rejects invalid list query parameters', async () => {
+    const { handler } = await import('../lib/function');
+
+    const response = await handler({
+      httpMethod: 'GET',
+      path: '/items',
+      resource: '/items',
+      queryStringParameters: {
+        limit: '101',
+      },
+    } as any);
+
+    expect(response.statusCode).toBe(400);
+    expect(JSON.parse(response.body)).toEqual({
+      error: 'Query parameter "limit" must be an integer from 1 to 100',
+    });
+    expect(scanMock).not.toHaveBeenCalled();
+  });
+
+  it('returns platform metadata for GET /platform', async () => {
+    const { handler } = await import('../lib/function');
+
+    const response = await handler({
+      httpMethod: 'GET',
+      path: '/platform',
+      resource: '/platform',
+    } as any);
+
+    expect(response.statusCode).toBe(200);
+
+    expect(JSON.parse(response.body)).toEqual({
+      name: 'InfraAsCodeWithCDK Platform',
+      type: 'platform-product',
+      stage: 'test',
+      catalogEntityRef: 'component:default/infra-as-code-with-cdk',
+      recommendedPath: {
+        templateName: 'recommended-path-service',
+        templatePath: 'backstage/templates/recommended-path-service/template.yaml',
+        catalogPath: 'catalog-info.yaml',
+        stages: [
+          'service scaffold',
+          'ci',
+          'image build',
+          'manifest tag update',
+          'argo cd deploy',
+          'dashboards and alerts',
+          'policy checks',
+        ],
+      },
+      capabilities: [
+        {
+          id: 'service-scaffold',
+          name: 'Service scaffold',
+          status: 'available',
+          description: 'Backstage scaffolder template for new services.',
+        },
+        {
+          id: 'ci',
+          name: 'CI validation',
+          status: 'available',
+          description: 'GitHub Actions validates build and policy checks.',
+        },
+        {
+          id: 'image-delivery',
+          name: 'Image delivery',
+          status: 'available',
+          description: 'GHCR image build and publish workflow for runtime delivery.',
+        },
+        {
+          id: 'gitops-deploy',
+          name: 'GitOps deployment',
+          status: 'available',
+          description: 'Argo CD reconciles Kubernetes manifests from Git.',
+        },
+        {
+          id: 'observability-baseline',
+          name: 'Observability baseline',
+          status: 'available',
+          description: 'Default dashboard and alert definitions ship with the template.',
+        },
+        {
+          id: 'policy-guardrails',
+          name: 'Policy guardrails',
+          status: 'available',
+          description: 'OPA conftest rules validate deployment manifests in CI.',
+        },
+      ],
+    });
+  });
+
+  it('returns the recommended path contract for GET /platform/recommended-path', async () => {
+    const { handler } = await import('../lib/function');
+
+    const response = await handler({
+      httpMethod: 'GET',
+      path: '/platform/recommended-path',
+      resource: '/platform/recommended-path',
+    } as any);
+
+    expect(response.statusCode).toBe(200);
+
+    expect(JSON.parse(response.body)).toEqual({
+      stage: 'test',
+      catalogEntityRef: 'component:default/infra-as-code-with-cdk',
+      recommendedPath: {
+        templateName: 'recommended-path-service',
+        templatePath: 'backstage/templates/recommended-path-service/template.yaml',
+        catalogPath: 'catalog-info.yaml',
+        stages: [
+          'service scaffold',
+          'ci',
+          'image build',
+          'manifest tag update',
+          'argo cd deploy',
+          'dashboards and alerts',
+          'policy checks',
+        ],
+      },
+      capabilities: [
+        {
+          id: 'service-scaffold',
+          name: 'Service scaffold',
+          status: 'available',
+          description: 'Backstage scaffolder template for new services.',
+        },
+        {
+          id: 'ci',
+          name: 'CI validation',
+          status: 'available',
+          description: 'GitHub Actions validates build and policy checks.',
+        },
+        {
+          id: 'image-delivery',
+          name: 'Image delivery',
+          status: 'available',
+          description: 'GHCR image build and publish workflow for runtime delivery.',
+        },
+        {
+          id: 'gitops-deploy',
+          name: 'GitOps deployment',
+          status: 'available',
+          description: 'Argo CD reconciles Kubernetes manifests from Git.',
+        },
+        {
+          id: 'observability-baseline',
+          name: 'Observability baseline',
+          status: 'available',
+          description: 'Default dashboard and alert definitions ship with the template.',
+        },
+        {
+          id: 'policy-guardrails',
+          name: 'Policy guardrails',
+          status: 'available',
+          description: 'OPA conftest rules validate deployment manifests in CI.',
+        },
       ],
     });
   });
@@ -99,6 +308,30 @@ describe('Lambda handler', () => {
     expect(response.statusCode).toBe(400);
     expect(JSON.parse(response.body)).toEqual({
       error: 'Field "name" must be a non-empty string',
+    });
+  });
+
+  it('advertises platform routes at the API root', async () => {
+    const { handler } = await import('../lib/function');
+
+    const response = await handler({
+      httpMethod: 'GET',
+      path: '/',
+      resource: '/',
+    } as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toEqual({
+      message: 'Platform product API is running',
+      platformType: 'platform-product',
+      recommendedPathTemplate: 'recommended-path-service',
+      routes: [
+        'GET /health',
+        'GET /platform',
+        'GET /platform/recommended-path',
+        'GET /items',
+        'POST /items',
+      ],
     });
   });
 });
