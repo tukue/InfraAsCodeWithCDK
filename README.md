@@ -10,6 +10,7 @@ The stack deploys:
 - Lambda function bundled from TypeScript
 - DynamoDB table for item storage
 - CloudWatch access logs and Lambda tracing
+- AWS Budget and Cost Explorer anomaly monitor for FinOps visibility
 
 Request flow:
 
@@ -63,6 +64,15 @@ Deploy a named stage:
 npm run cdk -- deploy --context stage=prod
 ```
 
+Deploy with FinOps notifications:
+
+```bash
+npm run cdk -- deploy \
+  --context stage=prod \
+  --context finOpsAlertEmail=finops@example.com \
+  --context monthlyBudgetAmount=250
+```
+
 ## API Endpoints
 
 - `GET /` returns platform metadata and the supported routes
@@ -102,6 +112,14 @@ npm run cdk -- diff
 - Lambda tracing is enabled with AWS X-Ray
 - API Gateway access logs are enabled
 - Non-production tables are destroyed with the stack, production tables are retained
+- All stack resources receive `Project`, `Environment`, `CostCenter`, and `FinOpsManaged` tags
+- CDK synth fails if a future Application Load Balancer is added without an AWS WAFv2 association
+
+## FinOps
+
+- Monthly cost budget defaults to `50 USD` and can be changed with `--context monthlyBudgetAmount=<amount>` or `MONTHLY_BUDGET_AMOUNT`
+- Budget alerts and Cost Explorer anomaly notifications are added when `finOpsAlertEmail` or `FINOPS_ALERT_EMAIL` is provided
+- Cost Explorer anomaly detection monitors service-level spend for the platform product
 
 ## Stack Outputs
 
@@ -109,3 +127,5 @@ npm run cdk -- diff
 - DynamoDB table name
 - Backstage catalog entity reference
 - Recommended path template name
+- Monthly cost budget name
+- Cost anomaly monitor ARN
