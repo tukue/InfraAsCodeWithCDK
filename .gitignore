@@ -9,3 +9,14 @@ node_modules
 .cdk.staging
 cdk.out
 dist
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

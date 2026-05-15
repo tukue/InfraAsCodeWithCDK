@@ -74,7 +74,7 @@ Guidance:
   - Prometheus scrape annotations
   - OpenTelemetry SDK setup
   - Structured logging format
-  - Standard Grafana dashboard skeleton
+  - Standard Grafana dashboard baseline
 - Security defaults:
   - Non-root container, read-only root fs where possible
   - Image scan gate

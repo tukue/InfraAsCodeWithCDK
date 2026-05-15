@@ -1,0 +1,25 @@
+{
+  "title": "${{ values.name }} Overview",
+  "tags": ["recommended-path", "${{ values.name }}"],
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Request rate",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{service=\"${{ values.name }}\"}[5m]))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Pod restarts",
+      "targets": [
+        {
+          "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"${{ values.kubeNamespace }}\",container=\"app\"})"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39
+}

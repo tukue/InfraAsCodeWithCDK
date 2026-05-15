@@ -22,6 +22,7 @@ It is also curated as a **Platform Engineering consulting profile project** that
 - GitOps-oriented app delivery guardrails
 - OPA/Conftest policy bundle for Kubernetes deployment security checks
 - Day-2 DX helpers via `Makefile`
+- Serverless CDK sample stack with API Gateway, Lambda, DynamoDB, observability, and FinOps visibility
 
 ## Repository structure
 
@@ -71,13 +72,14 @@ See detailed architecture and workflows in:
 - `docs/oaas-implementation-flow.md`
 - `templates/service-catalog/template.yaml`
 
-
 ## Implemented platform product guardrails
 
-The CDK app now applies two productized guardrails from the platform review recommendations:
+The CDK app applies productized guardrails from the platform review recommendations:
 
 - **Typed environment configuration** via `lib/platform-config.ts` with explicit `dev|stage|prod` validation and fail-fast errors for missing or invalid values.
 - **Mandatory governance tags** standardized at stack level and validated in tests for key resources: `environment`, `project`, `owner`, `cost-center`, and `data-classification`.
+- **FinOps visibility** through AWS Budgets, Cost Explorer anomaly monitoring, and `finops-managed` resource tagging.
+- **ALB security enforcement** through a CDK validation that fails synth when an Application Load Balancer has no AWS WAFv2 association.
 
 Set the environment explicitly with either CDK context or environment variable:
 
@@ -87,6 +89,37 @@ PLATFORM_ENV=stage npm run synth
 # or, direct CDK command
 npm run cdk -- synth -c platformEnv=prod
 ```
+
+Deploy with FinOps notifications:
+
+```bash
+npm run cdk -- deploy \
+  --context platformEnv=prod \
+  --context finOpsAlertEmail=finops@example.com \
+  --context monthlyBudgetAmount=250
+```
+
+## API Endpoints
+
+- `GET /` returns platform metadata and the supported routes
+- `GET /health` returns a lightweight health response
+- `GET /platform` returns the platform-product contract and available capabilities
+- `GET /platform/recommended-path` returns the recommended-path delivery stages and template metadata
+- `GET /items` lists items from DynamoDB with `limit` and `cursor` pagination ordered by `createdAt`
+- `POST /items` creates a new item
+
+List items with pagination:
+
+```bash
+curl "$API_URL/items?limit=25"
+curl "$API_URL/items?limit=25&cursor=$NEXT_CURSOR"
+```
+
+## FinOps
+
+- Monthly cost budget defaults to `50 USD` and can be changed with `--context monthlyBudgetAmount=<amount>` or `MONTHLY_BUDGET_AMOUNT`
+- Budget alerts and Cost Explorer anomaly notifications are added when `finOpsAlertEmail` or `FINOPS_ALERT_EMAIL` is provided
+- Cost Explorer anomaly detection monitors service-level spend for the platform product
 
 ## Code review resolution
 
@@ -114,6 +147,28 @@ make app-bootstrap SERVICE=my-api
 make app-deploy ENV=dev SERVICE=my-api TAG=v1.2.3
 make app-policy-test
 ```
+
+## Useful CDK commands
+
+```bash
+npm run build
+npm test
+npm run synth
+npm run cdk -- diff
+```
+
+## Stack Outputs
+
+- API Gateway URL
+- DynamoDB table name
+- DynamoDB `createdAt` pagination GSI name
+- Backstage catalog entity reference
+- Recommended path template name
+- Monthly cost budget name
+- Cost anomaly monitor ARN
+- Observability dashboard name
+- Observability alarm topic ARN
+- Lambda application log group name
 
 ## Notes
 

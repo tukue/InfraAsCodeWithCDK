@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ${{ values.name }}-alerts
+spec:
+  groups:
+    - name: ${{ values.name }}.rules
+      rules:
+        - alert: ${{ values.name | replace("-", "") | upper }}HighErrorRate
+          expr: sum(rate(http_requests_total{service="${{ values.name }}",status=~"5.."}[5m])) > 1
+          for: 10m
+          labels:
+            severity: warning
+            service: ${{ values.name }}
+          annotations:
+            summary: Elevated 5xx rate for ${{ values.name }}
+        - alert: ${{ values.name | replace("-", "") | upper }}PodsUnavailable
+          expr: kube_deployment_status_replicas_unavailable{deployment="${{ values.name }}"} > 0
+          for: 5m
+          labels:
+            severity: critical
+            service: ${{ values.name }}
+          annotations:
+            summary: Unavailable replicas detected for ${{ values.name }}
