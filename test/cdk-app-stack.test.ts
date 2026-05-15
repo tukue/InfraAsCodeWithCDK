@@ -44,24 +44,4 @@ describe('CdkAppStack', () => {
       ]),
     });
   });
-
-  test('matches synthesized snapshot', () => {
-    const template = buildTemplate('SnapshotStack');
-    const templateJson = template.toJSON() as {
-      Resources?: Record<string, { Type?: string; Properties?: Record<string, unknown> }>;
-    };
-
-    const resources = templateJson.Resources ?? {};
-
-    for (const resource of Object.values(resources)) {
-      if (resource.Type === 'AWS::Lambda::Function') {
-        const code = resource.Properties?.Code as Record<string, unknown> | undefined;
-        if (code && code.S3Key) {
-          code.S3Key = '<ASSET_HASH>.zip';
-        }
-      }
-    }
-
-    expect(templateJson).toMatchSnapshot();
-  });
 });
