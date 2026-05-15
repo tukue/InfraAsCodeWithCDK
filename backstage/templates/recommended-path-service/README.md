@@ -12,4 +12,4 @@ It scaffolds one service repository end to end with:
 - Default Grafana dashboard and Prometheus alerts
 - OPA policy checks for Kubernetes manifests
 
-The template lives in [template.yaml](/mnt/c/Users/tukue/InfraAsCodeWithCDK/backstage/templates/recommended-path-service/template.yaml) and the generated repository skeleton is under `skeleton/`.
+The template lives in `template.yaml` and the generated repository structure is under `scaffold/`.

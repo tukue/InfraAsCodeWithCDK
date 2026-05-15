@@ -647,7 +647,7 @@ backstage/
     └── recommended-path-service/
         ├── template.yaml
         ├── README.md
-        └── skeleton/
+        └── scaffold/
             ├── .github/workflows/
             ├── deploy/
             ├── gitops/argocd/

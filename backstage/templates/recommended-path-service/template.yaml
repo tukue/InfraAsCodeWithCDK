@@ -54,10 +54,10 @@ spec:
 
   steps:
     - id: fetch-base
-      name: Fetch service skeleton
+      name: Fetch service scaffold
       action: fetch:template
       input:
-        url: ./skeleton
+        url: ./scaffold
         values:
           name: ${{ parameters.name }}
           description: ${{ parameters.description }}
