@@ -1,10 +1,10 @@
-const scanMock = jest.fn();
+const queryMock = jest.fn();
 const putMock = jest.fn();
 
 jest.mock('aws-sdk', () => ({
   DynamoDB: {
     DocumentClient: jest.fn(() => ({
-      scan: scanMock,
+      query: queryMock,
       put: putMock,
     })),
   },
@@ -15,12 +15,13 @@ describe('Lambda handler', () => {
     jest.resetModules();
     process.env.DYNAMODB = 'demo-items-test';
     process.env.STAGE = 'test';
+    process.env.ITEMS_BY_CREATED_AT_INDEX = 'ItemsByCreatedAtIndex';
     process.env.CATALOG_ENTITY_REF = 'component:default/infra-as-code-with-cdk';
     process.env.RECOMMENDED_PATH_TEMPLATE_NAME = 'recommended-path-service';
     process.env.RECOMMENDED_PATH_TEMPLATE_PATH =
       'backstage/templates/recommended-path-service/template.yaml';
     process.env.RECOMMENDED_PATH_CATALOG_PATH = 'catalog-info.yaml';
-    scanMock.mockReset();
+    queryMock.mockReset();
     putMock.mockReset();
   });
 
@@ -41,13 +42,17 @@ describe('Lambda handler', () => {
   });
 
   it('lists items for GET /items', async () => {
-    scanMock.mockReturnValue({
+    queryMock.mockReturnValue({
       promise: jest.fn().mockResolvedValue({
         Items: [
-          { id: '1', name: 'older', createdAt: '2024-01-01T00:00:00.000Z' },
-          { id: '2', name: 'newer', createdAt: '2024-01-02T00:00:00.000Z' },
+          { id: '2', entityType: 'ITEM', name: 'newer', createdAt: '2024-01-02T00:00:00.000Z' },
+          { id: '1', entityType: 'ITEM', name: 'older', createdAt: '2024-01-01T00:00:00.000Z' },
         ],
-        LastEvaluatedKey: { id: '2' },
+        LastEvaluatedKey: {
+          id: '1',
+          entityType: 'ITEM',
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       }),
     });
 
@@ -63,30 +68,53 @@ describe('Lambda handler', () => {
     } as any);
 
     expect(response.statusCode).toBe(200);
-    expect(scanMock).toHaveBeenCalledWith({
+    expect(queryMock).toHaveBeenCalledWith({
       TableName: 'demo-items-test',
+      IndexName: 'ItemsByCreatedAtIndex',
+      KeyConditionExpression: '#entityType = :entityType',
+      ExpressionAttributeNames: {
+        '#entityType': 'entityType',
+      },
+      ExpressionAttributeValues: {
+        ':entityType': 'ITEM',
+      },
       Limit: 10,
       ExclusiveStartKey: undefined,
+      ScanIndexForward: false,
     });
+    const nextCursor = Buffer.from(
+      JSON.stringify({
+        id: '1',
+        entityType: 'ITEM',
+        createdAt: '2024-01-01T00:00:00.000Z',
+      }),
+      'utf8',
+    ).toString('base64url');
+
     expect(JSON.parse(response.body)).toEqual({
       count: 2,
       limit: 10,
-      nextCursor: Buffer.from(JSON.stringify({ id: '2' }), 'utf8').toString('base64url'),
+      nextCursor,
       items: [
-        { id: '2', name: 'newer', createdAt: '2024-01-02T00:00:00.000Z' },
-        { id: '1', name: 'older', createdAt: '2024-01-01T00:00:00.000Z' },
+        { id: '2', entityType: 'ITEM', name: 'newer', createdAt: '2024-01-02T00:00:00.000Z' },
+        { id: '1', entityType: 'ITEM', name: 'older', createdAt: '2024-01-01T00:00:00.000Z' },
       ],
     });
   });
 
   it('uses a default limit and decodes cursors for GET /items', async () => {
-    scanMock.mockReturnValue({
+    queryMock.mockReturnValue({
       promise: jest.fn().mockResolvedValue({
         Items: [],
       }),
     });
 
-    const cursor = Buffer.from(JSON.stringify({ id: 'previous' }), 'utf8').toString('base64url');
+    const cursorKey = {
+      id: 'previous',
+      entityType: 'ITEM',
+      createdAt: '2024-01-01T00:00:00.000Z',
+    };
+    const cursor = Buffer.from(JSON.stringify(cursorKey), 'utf8').toString('base64url');
     const { handler } = await import('../lib/function');
 
     const response = await handler({
@@ -99,12 +127,19 @@ describe('Lambda handler', () => {
     } as any);
 
     expect(response.statusCode).toBe(200);
-    expect(scanMock).toHaveBeenCalledWith({
+    expect(queryMock).toHaveBeenCalledWith({
       TableName: 'demo-items-test',
-      Limit: 25,
-      ExclusiveStartKey: {
-        id: 'previous',
+      IndexName: 'ItemsByCreatedAtIndex',
+      KeyConditionExpression: '#entityType = :entityType',
+      ExpressionAttributeNames: {
+        '#entityType': 'entityType',
       },
+      ExpressionAttributeValues: {
+        ':entityType': 'ITEM',
+      },
+      Limit: 25,
+      ExclusiveStartKey: cursorKey,
+      ScanIndexForward: false,
     });
     expect(JSON.parse(response.body)).toEqual({
       count: 0,
@@ -129,7 +164,7 @@ describe('Lambda handler', () => {
     expect(JSON.parse(response.body)).toEqual({
       error: 'Query parameter "limit" must be an integer from 1 to 100',
     });
-    expect(scanMock).not.toHaveBeenCalled();
+    expect(queryMock).not.toHaveBeenCalled();
   });
 
   it('returns platform metadata for GET /platform', async () => {
@@ -291,6 +326,7 @@ describe('Lambda handler', () => {
 
     const parsed = JSON.parse(response.body);
     expect(parsed.item.name).toBe('example item');
+    expect(parsed.item.entityType).toBe('ITEM');
     expect(parsed.item.id).toEqual(expect.any(String));
     expect(parsed.item.createdAt).toEqual(expect.any(String));
   });

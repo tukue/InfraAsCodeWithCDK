@@ -1,0 +1,68 @@
+name: platform-iac-ci
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'platform/**'
+      - 'lib/**'
+      - 'bin/**'
+      - 'test/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'jest.config.js'
+      - '.github/workflows/platform-iac-ci.yml'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: TypeScript build
+        run: npm run build
+
+      - name: Unit and snapshot tests
+        run: npm test -- --ci
+
+      - name: CDK synth
+        run: npm run synth
+
+      - name: Static security scan (Checkov)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: cloudformation,terraform,github_actions
+          soft_fail: false
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
+          quiet: true
+
+      - name: Upload Checkov SARIF report
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
+
+      - name: Static security scan (Trivy IaC misconfigurations)
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          scan-type: config
+          scan-ref: applications/gitops/base
+          hide-progress: true
+          severity: CRITICAL,HIGH
+          exit-code: '1'

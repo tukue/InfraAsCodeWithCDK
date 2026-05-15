@@ -1,15 +1,12 @@
 import { randomUUID } from 'crypto';
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import * as AWS from 'aws-sdk';
 
 type ItemRecord = {
   id: string;
+  entityType: 'ITEM';
   name: string;
   createdAt: string;
-};
-
-type ItemsCursor = {
-  id: string;
 };
 
 type PlatformCapability = {
@@ -19,11 +16,17 @@ type PlatformCapability = {
   description: string;
 };
 
+type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const defaultItemsLimit = 25;
 const maxItemsLimit = 100;
+const itemEntityType = 'ITEM';
 const tableName = process.env.DYNAMODB;
+const itemsByCreatedAtIndexName = process.env.ITEMS_BY_CREATED_AT_INDEX ?? 'ItemsByCreatedAtIndex';
 const stage = process.env.STAGE ?? 'dev';
+const serviceName = process.env.SERVICE_NAME || 'unknown-service';
+const logLevel = process.env.APP_LOG_LEVEL || 'INFO';
 const catalogEntityRef = process.env.CATALOG_ENTITY_REF ?? 'component:default/infra-as-code-with-cdk';
 const recommendedPathTemplateName =
   process.env.RECOMMENDED_PATH_TEMPLATE_NAME ?? 'recommended-path-service';
@@ -77,6 +80,36 @@ const platformCapabilities: PlatformCapability[] = [
   },
 ];
 
+const log = (
+  level: LogLevel,
+  message: string,
+  details: Record<string, unknown> = {},
+): void => {
+  const payload = {
+    timestamp: new Date().toISOString(),
+    level,
+    service: serviceName,
+    message,
+    ...details,
+  };
+
+  if (level === 'ERROR') {
+    console.error(JSON.stringify(payload));
+    return;
+  }
+
+  if (level === 'WARN') {
+    console.warn(JSON.stringify(payload));
+    return;
+  }
+
+  if (level === 'DEBUG' && logLevel !== 'DEBUG') {
+    return;
+  }
+
+  console.log(JSON.stringify(payload));
+};
+
 function getPlatformProduct() {
   return {
     name: 'InfraAsCodeWithCDK Platform',
@@ -101,10 +134,17 @@ function getPlatformProduct() {
   };
 }
 
-function json(statusCode: number, body: Record<string, unknown>): APIGatewayProxyResult {
+function json(
+  statusCode: number,
+  body: Record<string, unknown>,
+  correlationId?: string,
+): APIGatewayProxyResult {
   return {
     statusCode,
-    headers: jsonHeaders,
+    headers: {
+      ...jsonHeaders,
+      ...(correlationId ? { 'x-correlation-id': correlationId } : {}),
+    },
     body: JSON.stringify(body),
   };
 }
@@ -159,18 +199,27 @@ function decodeCursor(rawCursor?: string): AWS.DynamoDB.DocumentClient.Key | und
   }
 
   try {
-    const decoded = JSON.parse(Buffer.from(rawCursor, 'base64url').toString('utf8')) as Partial<ItemsCursor>;
+    const decoded = JSON.parse(
+      Buffer.from(rawCursor, 'base64url').toString('utf8'),
+    ) as unknown;
 
-    if (typeof decoded.id !== 'string' || decoded.id.trim() === '') {
-      throw new Error('Cursor does not contain a valid id');
+    if (!isDynamoDbKey(decoded)) {
+      throw new Error('Invalid cursor format');
     }
 
-    return {
-      id: decoded.id,
-    };
+    return decoded;
   } catch (error) {
     throw new Error('Query parameter "cursor" must be a valid pagination cursor');
   }
+}
+
+function isDynamoDbKey(value: unknown): value is AWS.DynamoDB.DocumentClient.Key {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.keys(value).length > 0
+  );
 }
 
 function isClientError(message: string): boolean {
@@ -186,16 +235,23 @@ async function listItems(event: APIGatewayProxyEvent): Promise<APIGatewayProxyRe
   const exclusiveStartKey = decodeCursor(event.queryStringParameters?.cursor);
 
   const result = await dynamodb
-    .scan({
+    .query({
       TableName: requireTableName(),
+      IndexName: itemsByCreatedAtIndexName,
+      KeyConditionExpression: '#entityType = :entityType',
+      ExpressionAttributeNames: {
+        '#entityType': 'entityType',
+      },
+      ExpressionAttributeValues: {
+        ':entityType': itemEntityType,
+      },
       Limit: limit,
       ExclusiveStartKey: exclusiveStartKey,
+      ScanIndexForward: false,
     })
     .promise();
 
-  const items = ((result.Items ?? []) as ItemRecord[]).sort((left, right) =>
-    right.createdAt.localeCompare(left.createdAt),
-  );
+  const items = (result.Items ?? []) as ItemRecord[];
 
   return json(200, {
     items,
@@ -210,6 +266,7 @@ async function createItem(event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
 
   const item: ItemRecord = {
     id: randomUUID(),
+    entityType: itemEntityType,
     name,
     createdAt: new Date().toISOString(),
   };
@@ -226,17 +283,33 @@ async function createItem(event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
   });
 }
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context?: Context,
+): Promise<APIGatewayProxyResult> => {
+  const correlationId =
+    event.headers?.['x-correlation-id'] ||
+    event.headers?.['X-Correlation-Id'] ||
+    context?.awsRequestId;
+
   try {
     const resourcePath = event.resource ?? event.path;
     const method = event.httpMethod;
     const platformProduct = getPlatformProduct();
 
+    log('INFO', 'request-received', {
+      awsRequestId: context?.awsRequestId,
+      correlationId,
+      path: event.path,
+      method,
+      tableNameConfigured: Boolean(tableName),
+    });
+
     if (resourcePath === '/health' && method === 'GET') {
       return json(200, {
         status: 'ok',
         stage,
-      });
+      }, correlationId);
     }
 
     if (resourcePath === '/items' && method === 'GET') {
@@ -248,7 +321,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     }
 
     if (resourcePath === '/platform' && method === 'GET') {
-      return json(200, platformProduct);
+      return json(200, platformProduct, correlationId);
     }
 
     if (resourcePath === '/platform/recommended-path' && method === 'GET') {
@@ -257,7 +330,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         catalogEntityRef,
         recommendedPath: platformProduct.recommendedPath,
         capabilities: platformProduct.capabilities,
-      });
+      }, correlationId);
     }
 
     if (resourcePath === '/' && method === 'GET') {
@@ -272,17 +345,17 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
           'GET /items',
           'POST /items',
         ],
-      });
+      }, correlationId);
     }
 
     return json(404, {
       error: 'Not Found',
-    });
+    }, correlationId);
   } catch (error) {
     if (error instanceof SyntaxError) {
       return json(400, {
         error: 'Request body must be valid JSON',
-      });
+      }, correlationId);
     }
 
     const message =
@@ -290,11 +363,15 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const statusCode = isClientError(message) ? 400 : 500;
 
     if (statusCode >= 500) {
-      console.error('Request failed', error);
+      log('ERROR', 'request-failed', {
+        awsRequestId: context?.awsRequestId,
+        correlationId,
+        errorMessage: message,
+      });
     }
 
     return json(statusCode, {
-      error: message,
-    });
+      error: statusCode >= 500 ? 'Internal Server Error' : message,
+    }, correlationId);
   }
 };

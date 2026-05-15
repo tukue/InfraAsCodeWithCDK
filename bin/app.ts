@@ -2,15 +2,17 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { CdkAppStack } from '../lib/cdk-app-stack';
+import { loadPlatformConfig } from '../lib/platform-config';
 
 const app = new cdk.App();
-const stageName = app.node.tryGetContext('stage') ?? process.env.STAGE ?? 'dev';
+const platformEnv = app.node.tryGetContext('platformEnv') ?? process.env.PLATFORM_ENV ?? 'dev';
+const platformConfig = loadPlatformConfig(platformEnv);
 const finOpsAlertEmail = app.node.tryGetContext('finOpsAlertEmail') ?? process.env.FINOPS_ALERT_EMAIL;
 const monthlyBudgetAmount = parseMonthlyBudgetAmount(
   app.node.tryGetContext('monthlyBudgetAmount') ?? process.env.MONTHLY_BUDGET_AMOUNT,
 );
 
-new CdkAppStack(app, `CdkAppStack-${stageName}`, {
+new CdkAppStack(app, 'CdkAppStack', {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
@@ -19,7 +21,7 @@ new CdkAppStack(app, `CdkAppStack-${stageName}`, {
     alertEmail: finOpsAlertEmail,
     monthlyBudgetAmount,
   },
-  stageName,
+  platformConfig,
 });
 
 function parseMonthlyBudgetAmount(rawAmount: unknown): number {

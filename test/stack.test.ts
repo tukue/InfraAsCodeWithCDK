@@ -3,6 +3,7 @@ import { Match, Template } from 'aws-cdk-lib/assertions';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 import { CdkAppStack } from '../lib/cdk-app-stack';
+import { loadPlatformConfig } from '../lib/platform-config';
 import { enforceAlbWafAssociations } from '../lib/security-guardrails';
 
 jest.mock('aws-cdk-lib/aws-lambda-nodejs', () => {
@@ -26,18 +27,18 @@ describe('CdkAppStack infrastructure', () => {
   it('adds FinOps cost visibility resources and cost allocation tags', () => {
     const app = new cdk.App();
     const stack = new CdkAppStack(app, 'TestStack', {
-      stageName: 'test',
       finOps: {
         alertEmail: 'finops@example.com',
         monthlyBudgetAmount: 125,
       },
+      platformConfig: loadPlatformConfig('dev'),
     });
 
     const template = Template.fromStack(stack);
 
     template.hasResourceProperties('AWS::Budgets::Budget', {
       Budget: {
-        BudgetName: 'platform-product-test-monthly-cost',
+        BudgetName: 'platform-product-dev-monthly-cost',
         BudgetType: 'COST',
         TimeUnit: 'MONTHLY',
         BudgetLimit: {
@@ -45,7 +46,7 @@ describe('CdkAppStack infrastructure', () => {
           Unit: 'USD',
         },
         CostFilters: {
-          TagKeyValue: ['user:Project$PlatformProduct'],
+          TagKeyValue: ['user:project$DemoAPI'],
         },
       },
       NotificationsWithSubscribers: [
@@ -81,13 +82,13 @@ describe('CdkAppStack infrastructure', () => {
     });
 
     template.hasResourceProperties('AWS::CE::AnomalyMonitor', {
-      MonitorName: 'platform-product-test-service-costs',
+      MonitorName: 'platform-product-dev-service-costs',
       MonitorType: 'DIMENSIONAL',
       MonitorDimension: 'SERVICE',
     });
 
     template.hasResourceProperties('AWS::CE::AnomalySubscription', {
-      SubscriptionName: 'platform-product-test-cost-anomalies',
+      SubscriptionName: 'platform-product-dev-cost-anomalies',
       Frequency: 'DAILY',
       Subscribers: [
         {
@@ -101,21 +102,39 @@ describe('CdkAppStack infrastructure', () => {
     template.hasResourceProperties('AWS::DynamoDB::Table', {
       Tags: Match.arrayWith([
         {
-          Key: 'CostCenter',
-          Value: 'PlatformEngineering',
+          Key: 'cost-center',
+          Value: 'ENG-PLATFORM',
         },
         {
-          Key: 'Environment',
-          Value: 'test',
+          Key: 'environment',
+          Value: 'dev',
         },
         {
-          Key: 'FinOpsManaged',
+          Key: 'finops-managed',
           Value: 'true',
         },
         {
-          Key: 'Project',
-          Value: 'PlatformProduct',
+          Key: 'project',
+          Value: 'DemoAPI',
         },
+      ]),
+    });
+
+    template.hasResourceProperties('AWS::DynamoDB::Table', {
+      GlobalSecondaryIndexes: Match.arrayWith([
+        Match.objectLike({
+          IndexName: 'ItemsByCreatedAtIndex',
+          KeySchema: [
+            {
+              AttributeName: 'entityType',
+              KeyType: 'HASH',
+            },
+            {
+              AttributeName: 'createdAt',
+              KeyType: 'RANGE',
+            },
+          ],
+        }),
       ]),
     });
   });
@@ -124,7 +143,7 @@ describe('CdkAppStack infrastructure', () => {
     const app = new cdk.App();
 
     new CdkAppStack(app, 'NoAlbStack', {
-      stageName: 'test',
+      platformConfig: loadPlatformConfig('dev'),
     });
 
     expect(() => app.synth()).not.toThrow();
