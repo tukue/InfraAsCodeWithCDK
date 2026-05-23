@@ -65,4 +65,4 @@ jobs:
           scan-ref: applications/gitops/base
           hide-progress: true
           severity: CRITICAL,HIGH
-          exit-code: '1'
+          exit-code: 1
