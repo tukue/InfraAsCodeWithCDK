@@ -17,7 +17,7 @@ A production-hardened **Internal Developer Platform (IDP)** reference implementa
 | **CI/CD Security** | Dual GitHub Actions pipelines with Checkov (CloudFormation/Terraform/GHA) and Trivy (IaC misconfig) scanning |
 | **Observability** | CloudWatch dashboard (golden signals), structured JSON logging with correlation IDs, X-Ray tracing, SNS alarm fan-out (Lambda errors, p95 latency, API 5XX) |
 | **FinOps** | AWS Budgets (configurable monthly), Cost Explorer anomaly detection with daily email subscriptions, `finops-managed` resource tagging |
-| **Secure-by-Default** | CMK encryption on all data services, VPC-isolated Lambda, DLQ, IAM auth on API Gateway, encrypted log groups (2yr retention), ALB-WAF enforcement guardrail (CDK Aspect validation) |
+| **Secure-by-Default** | CMK encryption on all data services, VPC-isolated Lambda, IAM auth on API Gateway, encrypted log groups (2yr retention), ALB-WAF enforcement guardrail (CDK Aspect validation) |
 | **Developer Experience** | Makefile DX targets, Backstage self-service templates, typed environment config with fail-fast validation |
 
 - A target platform architecture with:
@@ -40,10 +40,9 @@ graph TB
     subgraph Platform["Platform Layer (CDK Stack)"]
         KMS[("KMS CMK<br/>Platform-DataKey")]
         VPC[("VPC<br/>2 AZs · Public + Private")]
-        SQS[("SQS DLQ<br/>KMS-encrypted")]
-        
+        SQS[("SQS<br/>KMS-encrypted")]
         subgraph Compute["Serverless Compute"]
-            Lambda["Lambda (Node.js 18)<br/>VPC · DLQ · X-Ray<br/>Reserved Concurrency: 10<br/>Env vars KMS-encrypted"]
+            Lambda["Lambda (Node.js 18)<br/>VPC · SQS · X-Ray<br/>Reserved Concurrency: 10<br/>Env vars KMS-encrypted"]
         end
 
         subgraph API["API Gateway (REST)"]
@@ -182,10 +181,9 @@ The deployed API exposes the platform's value proposition directly:
 
 | Control | Implementation |
 |---|---|
-| **Data at rest** | Customer-managed KMS key encrypts DynamoDB, Lambda env vars, SQS DLQ, CloudWatch log groups |
+| **Data at rest** | Customer-managed KMS key encrypts DynamoDB, Lambda env vars, SQS, CloudWatch log groups |
 | **Network isolation** | Lambda deployed in VPC private subnets across 2 AZs |
 | **API auth** | IAM authorization on all endpoints (default), CORS configured |
-| **Dead Letter Queue** | SQS DLQ captures failed Lambda invocations, KMS-encrypted |
 | **Policy guardrails** | CDK Aspect fails synth if any ALB lacks a WAFv2 association |
 | **Logging** | API access logs (2yr retention), Lambda app logs (1mo retention), both KMS-encrypted |
 
@@ -248,9 +246,9 @@ deny[msg] { contains(image, ":latest") }
 | **KMS Key** | Symmetric CMK, key rotation enabled |
 | **VPC** | 2 AZs, 1 public + 1 private subnet per AZ, NAT Gateway, DNS support |
 | **DynamoDB** | PAY_PER_REQUEST, PITR enabled, KMS CMK, GSI for `createdAt` pagination |
-| **Lambda** | Node.js 18, esbuild bundling, VPC placement, DLQ, reserved concurrency: 10, memory: 1024 MB, timeout: 30s, X-Ray active |
+| **Lambda** | Node.js 18, esbuild bundling, VPC placement, reserved concurrency: 10, memory: 1024 MB, timeout: 30s, X-Ray active |
 | **API Gateway** | REST API, IAM auth, CORS, 0.5GB cache, access logging, data trace, X-Ray |
-| **SQS DLQ** | KMS-encrypted, visible timeout: 5 min |
+| **SQS** | KMS-encrypted |
 | **CloudWatch** | Dashboard (4 widgets), 3 alarms → SNS topic, log groups with KMS encryption |
 | **AWS Budgets** | Monthly cost budget (configurable), email alert threshold |
 | **Cost Explorer** | DIMENSIONAL/SERVICE anomaly monitor, DAILY anomaly subscription |
@@ -346,7 +344,7 @@ kubeconform validation → Conftest OPA policy checks
 - **Amazon DynamoDB** — NoSQL database
 - **AWS KMS** — Encryption key management
 - **Amazon VPC** — Network isolation
-- **Amazon SQS** — Dead letter queue
+- **Amazon SQS** — Queue service
 - **Amazon CloudWatch** — Monitoring, logging, dashboards, alarms
 - **Amazon SNS** — Alert notifications
 - **AWS Budgets & Cost Explorer** — Cost management
