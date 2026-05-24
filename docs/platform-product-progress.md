@@ -10,7 +10,7 @@ _Last updated: 2026-04-01_
 | Golden-path scaffolding (Backstage template) | ✅ Complete | 100% | Template + runnable repo structure added and parameterized org support enabled. |
 | Platform IaC CI guardrails | ✅ Complete | 100% | Build/synth/checkov workflow configured. |
 | App GitOps guardrails | ✅ Complete | 100% | kubeconform validation enabled and fail-fast behavior enforced. |
-| Secure-by-default CDK sample hardening | ✅ Complete | 100% | KMS, VPC, retry queue, IAM auth, caching, encrypted logs implemented. |
+| Secure-by-default CDK sample hardening | ✅ Complete | 100% | KMS, VPC, Lambda retry queue, IAM auth, caching, encrypted logs implemented. |
 | Environment overlays (dev/stage/prod) | 🟡 In Progress | 40% | Structure exists; env-specific manifests and policy sets pending. |
 | Policy-as-code enforcement (OPA/Kyverno) | 🟡 In Progress | 60% | Conftest policy bundle and CI enforcement added for deployment security/image/resource guardrails. |
 | Observability productization | 🟡 In Progress | 60% | CloudWatch dashboard, alerts, and structured logging baseline implemented; Prometheus/Grafana/Loki/OTel deployments pending. |
