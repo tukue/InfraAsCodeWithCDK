@@ -11,7 +11,7 @@
     "cdk": "cdk",
     "deploy": "cdk deploy",
     "destroy": "cdk destroy",
-    "synth": "cdk synth"
+    "synth": "bash -lc \"cdk synth -c platformEnv=${PLATFORM_ENV:-dev}\""
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.122",

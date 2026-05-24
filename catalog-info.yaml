@@ -1,0 +1,24 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: infra-as-code-with-cdk
+  description: Platform engineering example repo with a Backstage recommended path template.
+  tags:
+    - backstage
+    - aws-cdk
+    - platform-engineering
+spec:
+  type: platform
+  lifecycle: experimental
+  owner: platform-team
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: infra-as-code-with-cdk-templates
+  description: Registers Backstage templates from this repository.
+spec:
+  type: file
+  targets:
+    - ./backstage/templates/recommended-path-service/template.yaml
