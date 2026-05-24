@@ -20,7 +20,17 @@ A production-hardened **Internal Developer Platform (IDP)** reference implementa
 | **Secure-by-Default** | CMK encryption on all data services, VPC-isolated Lambda, DLQ, IAM auth on API Gateway, encrypted log groups (2yr retention), ALB-WAF enforcement guardrail (CDK Aspect validation) |
 | **Developer Experience** | Makefile DX targets, Backstage self-service templates, typed environment config with fail-fast validation |
 
----
+- A target platform architecture with:
+  - Amazon EKS for workload runtime
+  - GitOps with Argo CD
+  - Backstage as the developer portal
+  - Secure-by-default guardrails and policy checks
+- Repository structure for multi-team and multi-environment operation
+- Backstage software template example for self-service service creation
+- CI pipeline for platform IaC quality gates (build/test/synth + Checkov + Trivy security scans)
+- GitOps-oriented app delivery guardrails
+- OPA/Conftest policy bundle for Kubernetes deployment security checks
+- Day-2 DX helpers via `Makefile`
 
 ## Architecture
 
