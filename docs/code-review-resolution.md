@@ -20,7 +20,7 @@ This document captures how review feedback was applied during the Platform-as-a-
   - Added explicit least-privilege workflow permissions (`contents: read`).
 
 - [x] **Checkov findings from CDK stack resources**
-  - Added CMK encryption, Lambda DLQ, reserved concurrency, VPC placement, IAM auth defaults, and encrypted API access logs.
+  - Added CMK encryption, retry queue, reserved concurrency, VPC placement, IAM auth defaults, and encrypted API access logs.
   - Removed CDK-generated `CustomVpcRestrictDefaultSG` provider Lambda by setting `restrictDefaultSecurityGroup: false`, which eliminated residual Checkov findings tied to that generated function.
 
 ## Current status

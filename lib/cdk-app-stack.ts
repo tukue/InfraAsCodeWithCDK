@@ -88,7 +88,7 @@ export class CdkAppStack extends cdk.Stack {
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    const lambdaDlq = new sqs.Queue(this, 'LambdaDlq', {
+    const retryQueue = new sqs.Queue(this, 'RetryQueue', {
       encryption: sqs.QueueEncryption.KMS,
       encryptionMasterKey: encryptionKey,
       retentionPeriod: cdk.Duration.days(14),
@@ -121,7 +121,7 @@ export class CdkAppStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       tracing: lambda.Tracing.ACTIVE,
       deadLetterQueueEnabled: true,
-      deadLetterQueue: lambdaDlq,
+      deadLetterQueue: retryQueue,
       reservedConcurrentExecutions: 10,
       vpc: appVpc,
       vpcSubnets: {
