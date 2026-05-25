@@ -24,7 +24,13 @@ describe('CdkAppStack', () => {
   test('creates core resources', () => {
     const template = buildTemplate('TestStack');
 
-    template.resourceCountIs('AWS::Lambda::Function', 1);
+    template.resourcePropertiesCountIs('AWS::Lambda::Function', {
+      Environment: {
+        Variables: Match.objectLike({
+          SERVICE_NAME: 'demo-api',
+        }),
+      },
+    }, 1);
     template.resourceCountIs('AWS::ApiGateway::RestApi', 1);
     template.resourceCountIs('AWS::DynamoDB::Table', 1);
     template.resourceCountIs('AWS::KMS::Key', 1);

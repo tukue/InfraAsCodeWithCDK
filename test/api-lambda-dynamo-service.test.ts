@@ -36,8 +36,14 @@ describe('ApiLambdaDynamoService', () => {
 
     template.resourceCountIs('AWS::ApiGateway::RestApi', 1);
     template.resourceCountIs('AWS::DynamoDB::Table', 1);
-    template.resourceCountIs('AWS::Lambda::Function', 1);
     template.resourceCountIs('AWS::SQS::Queue', 1);
+    template.resourcePropertiesCountIs('AWS::Lambda::Function', {
+      Environment: {
+        Variables: Match.objectLike({
+          SERVICE_NAME: 'orders-api',
+        }),
+      },
+    }, 1);
 
     template.hasResourceProperties('AWS::DynamoDB::Table', {
       BillingMode: 'PAY_PER_REQUEST',
