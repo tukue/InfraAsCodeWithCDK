@@ -16,4 +16,12 @@ new ApiLambdaDynamoService(this, 'OrdersApiService', {
 });
 ```
 
+Cross-origin requests are disabled by default. If browser access is required, provide explicit origins:
+
+```ts
+cors: {
+  allowOrigins: ['https://app.example.com'],
+}
+```
+
 Use `applications/examples/orders-service/infra/orders-service-stack.ts` as the canonical consumer example.

@@ -22,6 +22,12 @@ export interface ApiLambdaDynamoServiceProps {
   readonly vpc?: ec2.IVpc;
   readonly encryptionKey?: kms.IKey;
   readonly environment?: Record<string, string>;
+  readonly cors?: {
+    readonly allowOrigins: string[];
+    readonly allowMethods?: string[];
+    readonly allowHeaders?: string[];
+    readonly maxAge?: cdk.Duration;
+  };
   readonly alarms?: {
     readonly enableP95LatencyAlarm?: boolean;
   };
@@ -68,7 +74,7 @@ export class ApiLambdaDynamoService extends Construct {
       new ec2.Vpc(this, 'ServiceVpc', {
         maxAzs: 2,
         natGateways: 1,
-        restrictDefaultSecurityGroup: false,
+        restrictDefaultSecurityGroup: true,
         subnetConfiguration: [
           {
             cidrMask: 24,
@@ -143,7 +149,6 @@ export class ApiLambdaDynamoService extends Construct {
       memorySize: props.overrides?.lambda?.memorySize ?? 1024,
       timeout: props.overrides?.lambda?.timeout ?? cdk.Duration.seconds(30),
       tracing: lambda.Tracing.ACTIVE,
-      deadLetterQueueEnabled: true,
       deadLetterQueue: this.retryQueue,
       reservedConcurrentExecutions: props.overrides?.lambda?.reservedConcurrentExecutions ?? 10,
       vpc,
@@ -173,18 +178,20 @@ export class ApiLambdaDynamoService extends Construct {
       defaultMethodOptions: {
         authorizationType: apigateway.AuthorizationType.IAM,
       },
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: [
-          'Content-Type',
-          'X-Amz-Date',
-          'Authorization',
-          'X-Api-Key',
-          'X-Amz-Security-Token',
-        ],
-        maxAge: cdk.Duration.days(1),
-      },
+      defaultCorsPreflightOptions: props.cors
+        ? {
+            allowOrigins: props.cors.allowOrigins,
+            allowMethods: props.cors.allowMethods ?? apigateway.Cors.ALL_METHODS,
+            allowHeaders: props.cors.allowHeaders ?? [
+              'Content-Type',
+              'X-Amz-Date',
+              'Authorization',
+              'X-Api-Key',
+              'X-Amz-Security-Token',
+            ],
+            maxAge: props.cors.maxAge ?? cdk.Duration.days(1),
+          }
+        : undefined,
       deployOptions: {
         accessLogDestination: new apigateway.LogGroupLogDestination(this.apiAccessLogs),
         accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields(),
@@ -241,5 +248,9 @@ function validateProps(props: ApiLambdaDynamoServiceProps): void {
 
   if (!props.recommendedPathTemplatePath.trim()) {
     throw new Error('ApiLambdaDynamoService recommendedPathTemplatePath must be a non-empty string.');
+  }
+
+  if (props.cors?.allowOrigins.some((origin) => origin === '*')) {
+    throw new Error('ApiLambdaDynamoService cors.allowOrigins must not include wildcard origins.');
   }
 }

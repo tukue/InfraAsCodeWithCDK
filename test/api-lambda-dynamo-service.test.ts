@@ -75,6 +75,10 @@ describe('ApiLambdaDynamoService', () => {
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       AuthorizationType: 'AWS_IAM',
     });
+
+    template.resourceCountIs('Custom::VpcRestrictDefaultSG', 1);
+
+    expect(JSON.stringify(template.toJSON())).not.toContain("'Access-Control-Allow-Origin':'*'");
   });
 
   it('fails fast on invalid service names', () => {
@@ -93,5 +97,24 @@ describe('ApiLambdaDynamoService', () => {
     ).toThrow(
       'ApiLambdaDynamoService serviceName must be 3-40 characters and use lowercase letters, numbers, and hyphens.',
     );
+  });
+
+  it('rejects wildcard CORS origins', () => {
+    const app = new cdk.App();
+    const stack = new cdk.Stack(app, 'InvalidCorsStack');
+
+    expect(
+      () =>
+        new ApiLambdaDynamoService(stack, 'InvalidCorsApiService', {
+          serviceName: 'orders-api',
+          stageName: 'dev',
+          catalogEntityRef: 'component:default/orders-service',
+          recommendedPathTemplateName: 'recommended-path-service',
+          recommendedPathTemplatePath: 'backstage/templates/recommended-path-service/template.yaml',
+          cors: {
+            allowOrigins: ['*'],
+          },
+        }),
+    ).toThrow('ApiLambdaDynamoService cors.allowOrigins must not include wildcard origins.');
   });
 });
