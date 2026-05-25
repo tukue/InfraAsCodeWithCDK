@@ -15,11 +15,12 @@
     "noFallthroughCasesInSwitch": false,
     "inlineSourceMap": true,
     "inlineSources": true,
+    "skipLibCheck": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "types": ["node", "jest", "aws-lambda"],
     "outDir": "dist"
   },
   "exclude": ["node_modules", "cdk.out", "dist"],
-  "include": ["bin/**/*", "lib/**/*"]
+  "include": ["bin/**/*", "lib/**/*", "packages/**/*", "applications/examples/**/*"]
 }

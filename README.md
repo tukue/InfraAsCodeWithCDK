@@ -111,6 +111,7 @@ graph TB
 │   ├── services/                      # Platform services (Argo CD, Backstage, monitoring)
 │   └── environments/                  # Per-environment composition (dev/stage/prod)
 ├── applications/                      # Developer/App team owned
+│   ├── examples/orders-service/       # Canonical CDK consumer of platform constructs
 │   ├── gitops/                        # Kubernetes manifests + Kustomize overlays
 │   │   ├── base/                      #  Reference: Namespace, Deployment, Service
 │   │   └── overlays/ (dev/stage/prod)
@@ -122,8 +123,10 @@ graph TB
 │       ├── template.yaml              #  Backstage scaffolder v1beta3
 │       └── scaffold/                  # Scaffold files (CI, observability, policy)
 ├── templates/service-catalog/         # Additional Backstage template (multi-language)
+├── packages/platform-constructs/      # Reusable golden-path CDK constructs
+│   └── src/api-lambda-dynamo-service/ #  API Gateway + Lambda + DynamoDB construct
 ├── lib/                               # CDK application source
-│   ├── cdk-app-stack.ts               #  Main stack — all AWS resources
+│   ├── cdk-app-stack.ts               #  Main stack composing platform constructs
 │   ├── function.ts                    #  Lambda handler (Node.js 18)
 │   ├── platform-config.ts             #  Typed env config with validation
 │   └── security-guardrails.ts         #  ALB-WAF CDK Aspect validation
@@ -143,6 +146,7 @@ graph TB
 │   ├── platform-product-operating-model.md
 │   ├── platform-engineering-consulting-profile.md
 │   ├── observability-as-a-service.md
+│   ├── onboarding/first-service.md
 │   └── oaas-implementation-flow.md
 ├── catalog-info.yaml                  # Backstage entity registration
 ├── Makefile                           # DX: platform-check, app-deploy, policy-test, etc.
@@ -307,7 +311,10 @@ kubeconform validation → Conftest OPA policy checks
 | `docs/platform-engineering-consulting-profile.md` | Portfolio framing: strategy → architecture → implementation → adoption |
 | `docs/observability-as-a-service.md` | OaaS maturity assessment + baseline implementation |
 | `docs/oaas-implementation-flow.md` | End-to-end OaaS flow with ownership model and definition of done |
+| `docs/onboarding/first-service.md` | 30-minute first-service onboarding path using the golden-path construct |
 | `docs/code-review-resolution.md` | Audit trail of how review feedback was addressed |
+| `packages/platform-constructs/README.md` | Reusable CDK construct contract and consumer example |
+| `CONTRIBUTING.md` | Compatibility, deprecation, ownership, and PR expectations |
 | `PLATFORM_PRODUCT_SETUP.md` | Full platform transformation guide (905 lines) |
 | `applications/policy/README.md` | OPA policy bundle documentation |
 | `terraform/README.md` | HashiCorp Vault setup guide |
