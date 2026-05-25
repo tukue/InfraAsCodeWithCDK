@@ -6,11 +6,11 @@ _Last updated: 2026-04-01_
 
 | Workstream | Status | Progress | Notes |
 |---|---|---:|---|
-| Repository product model (platform vs applications) | ✅ Complete | 100% | Baseline folder model and docs are in place. |
+| Repository product model (platform vs applications) | ✅ Complete | 100% | Baseline folder model, platform construct package, and canonical consumer example are in place. |
 | Golden-path scaffolding (Backstage template) | ✅ Complete | 100% | Template + runnable repo structure added and parameterized org support enabled. |
 | Platform IaC CI guardrails | ✅ Complete | 100% | Build/synth/checkov workflow configured. |
 | App GitOps guardrails | ✅ Complete | 100% | kubeconform validation enabled and fail-fast behavior enforced. |
-| Secure-by-default CDK sample hardening | ✅ Complete | 100% | KMS, VPC, Lambda retry queue, IAM auth, caching, encrypted logs implemented. |
+| Secure-by-default CDK sample hardening | ✅ Complete | 100% | KMS, VPC, Lambda retry queue, IAM auth, caching, encrypted logs implemented through the reusable API/Lambda/Dynamo construct. |
 | Environment overlays (dev/stage/prod) | 🟡 In Progress | 40% | Structure exists; env-specific manifests and policy sets pending. |
 | Policy-as-code enforcement (OPA/Kyverno) | 🟡 In Progress | 60% | Conftest policy bundle and CI enforcement added for deployment security/image/resource guardrails. |
 | Observability productization | 🟡 In Progress | 60% | CloudWatch dashboard, alerts, and structured logging baseline implemented; Prometheus/Grafana/Loki/OTel deployments pending. |
@@ -25,6 +25,7 @@ _Last updated: 2026-04-01_
 - Developer command interface established through `Makefile` targets.
 - Backstage self-service template now executable from a real scaffold repo structure.
 - Sample GitOps base manifests added for validation and onboarding reference.
+- First golden-path CDK construct added under `packages/platform-constructs` with `applications/examples/orders-service` as a canonical consumer.
 
 ## Current quarter priorities
 
@@ -41,6 +42,7 @@ _Last updated: 2026-04-01_
   - Encrypted SNS-backed alarm fan-out for Lambda and API failures/latency.
   - Structured Lambda JSON logging and correlation-ID propagation.
 - See `docs/observability-as-a-service.md` for assessment details and rollout recommendations.
+- Productized the API/Lambda/DynamoDB baseline as `ApiLambdaDynamoService`, added a first-service onboarding guide, and defined contribution/deprecation expectations in `CONTRIBUTING.md`.
 
 ## Definition of done for next milestone
 

@@ -9,7 +9,7 @@ help:
 	@echo "make build                      # Build TypeScript"
 	@echo "make test                       # Run tests"
 	@echo "make synth                      # CDK synth"
-	@echo "make platform-check             # Build + synth + lint placeholder"
+	@echo "make platform-check             # Build + test + synth"
 	@echo "make platform-plan ENV=dev      # Plan platform changes"
 	@echo "make platform-apply ENV=dev     # Apply platform changes"
 	@echo "make app-bootstrap SERVICE=name # Bootstrap app from template"
@@ -26,8 +26,8 @@ test:
 synth:
 	npx cdk synth
 
-platform-check: build synth
-	@echo "[platform-check] add checkov/tfsec/cdk-nag in CI"
+platform-check: build test synth
+	@echo "[platform-check] build, tests, and synth completed"
 
 platform-plan:
 	@echo "[platform-plan] ENV=$(ENV)"
