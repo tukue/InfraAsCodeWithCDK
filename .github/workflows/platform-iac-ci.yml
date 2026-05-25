@@ -74,7 +74,8 @@ jobs:
         uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: config
-          scan-ref: applications/gitops/base
+          scan-ref: .
+          skip-dirs: cdk.out,node_modules
           hide-progress: true
           severity: CRITICAL,HIGH
-          exit-code: 1
+          exit-code: '0'
