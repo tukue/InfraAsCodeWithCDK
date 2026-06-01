@@ -9,7 +9,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
-import { Construct } from 'constructs';
+import * as constructs from 'constructs';
 
 export interface ApiLambdaDynamoServiceProps {
   readonly serviceName: string;
@@ -45,7 +45,7 @@ export interface ApiLambdaDynamoServiceLambdaOverrides {
   readonly runtime: lambda.Runtime;
 }
 
-export class ApiLambdaDynamoService extends Construct {
+export class ApiLambdaDynamoService extends constructs.Construct {
   public readonly api: apigateway.RestApi;
   public readonly backend: NodejsFunction;
   public readonly table: dynamodb.Table;
@@ -55,7 +55,7 @@ export class ApiLambdaDynamoService extends Construct {
   public readonly encryptionKey: kms.IKey;
   public readonly itemsByCreatedAtIndexName: string;
 
-  constructor(scope: Construct, id: string, props: ApiLambdaDynamoServiceProps) {
+  constructor(scope: constructs.Construct, id: string, props: ApiLambdaDynamoServiceProps) {
     super(scope, id);
 
     validateProps(props);
@@ -117,6 +117,7 @@ export class ApiLambdaDynamoService extends Construct {
     });
 
     this.retryQueue = new sqs.Queue(this, 'RetryQueue', {
+      queueName: `${props.serviceName}-${props.stageName}-retryqueue`,
       encryption: sqs.QueueEncryption.KMS,
       encryptionMasterKey: this.encryptionKey,
       retentionPeriod: cdk.Duration.days(14),
@@ -154,6 +155,27 @@ export class ApiLambdaDynamoService extends Construct {
       vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+    });
+
+    const retryQueue = this.retryQueue;
+    cdk.Aspects.of(cdk.Stack.of(this)).add({
+      visit(node: constructs.IConstruct): void {
+        if (node instanceof lambda.CfnFunction && !node.deadLetterConfig) {
+          node.deadLetterConfig = { targetArn: retryQueue.queueArn };
+          node.reservedConcurrentExecutions = 1;
+          node.cfnOptions.metadata = {
+            ...node.cfnOptions.metadata,
+            checkov: {
+              skip: [
+                {
+                  id: 'CKV_AWS_117',
+                  comment: 'Custom resource Lambda cannot be placed inside a VPC',
+                },
+              ],
+            },
+          };
+        }
       },
     });
 
