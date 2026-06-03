@@ -37,10 +37,10 @@ jobs:
       - name: TypeScript build
         run: npm run build
 
-      - name: Unit and snapshot tests
+      - name: Unit, snapshot, and compliance tests
         run: npm test -- --ci
 
-      - name: CDK synth
+      - name: CDK synth with cdk-nag compliance guardrails
         run: npm run synth
 
       - name: Static security scan (Checkov)

@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { ApiLambdaDynamoService } from '../../../../packages/platform-constructs/src';
 import { PlatformConfig } from '../../../../lib/platform-config';
+import { applyComplianceGuardrails, stackSuppressionsForApiLambdaDynamo } from '../../../../lib/platform-compliance';
 
 export interface OrdersServiceStackProps extends cdk.StackProps {
   readonly platformConfig: PlatformConfig;
@@ -31,5 +32,8 @@ export class OrdersServiceStack extends cdk.Stack {
     cdk.Tags.of(this).add('cost-center', props.platformConfig.costCenter);
     cdk.Tags.of(this).add('data-classification', props.platformConfig.dataClassification);
     cdk.Tags.of(this).add('finops-managed', 'true');
+
+    applyComplianceGuardrails(this);
+    stackSuppressionsForApiLambdaDynamo(this, 'orders-api');
   }
 }

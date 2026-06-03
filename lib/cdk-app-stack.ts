@@ -8,6 +8,7 @@ import { Construct } from 'constructs';
 import { ApiLambdaDynamoService } from '../packages/platform-constructs/src';
 import { PlatformConfig } from './platform-config';
 import { enforceAlbWafAssociations } from './security-guardrails';
+import { applyComplianceGuardrails, stackSuppressionsForApiLambdaDynamo } from './platform-compliance';
 
 export interface CdkAppStackProps extends cdk.StackProps {
   readonly platformConfig: PlatformConfig;
@@ -248,6 +249,9 @@ export class CdkAppStack extends cdk.Stack {
     cdk.Tags.of(this).add('cost-center', props.platformConfig.costCenter);
     cdk.Tags.of(this).add('data-classification', props.platformConfig.dataClassification);
     cdk.Tags.of(this).add('finops-managed', 'true');
+
+    applyComplianceGuardrails(this);
+    stackSuppressionsForApiLambdaDynamo(this, 'demo-api');
   }
 }
 
