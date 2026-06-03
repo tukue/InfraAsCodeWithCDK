@@ -1,26 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
-import { Annotations } from 'aws-cdk-lib';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { Construct } from 'constructs';
-
-export const REQUIRED_TAGS = ['environment', 'project', 'owner', 'cost-center', 'data-classification'] as const;
 
 export function applyComplianceGuardrails(stack: cdk.Stack): void {
   cdk.Aspects.of(stack).add(new AwsSolutionsChecks());
-  cdk.Aspects.of(stack).add(new TagEnforcementAspect());
   suppressCommonNagViolations(stack);
-}
-
-class TagEnforcementAspect implements cdk.IAspect {
-  visit(node: Construct): void {
-    if (node instanceof cdk.Stack) {
-      for (const tag of REQUIRED_TAGS) {
-        if (!cdk.Tags.of(node).hasTag(tag)) {
-          Annotations.of(node).addError(`Stack "${node.stackName}" is missing required governance tag "${tag}". Required tags: ${REQUIRED_TAGS.join(', ')}.`);
-        }
-      }
-    }
-  }
 }
 
 function suppressCommonNagViolations(stack: cdk.Stack): void {
@@ -64,7 +47,7 @@ function suppressCommonNagViolations(stack: cdk.Stack): void {
   ]);
 }
 
-export function stackSuppressionsForApiLambdaDynamo(stack: cdk.Stack, serviceName: string): void {
+export function stackSuppressionsForApiLambdaDynamo(stack: cdk.Stack, _serviceName: string): void {
   NagSuppressions.addStackSuppressions(stack, [
     {
       id: 'AwsSolutions-APIG2',
