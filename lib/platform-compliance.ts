@@ -1,10 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import * as apigw from 'aws-cdk-lib/aws-apigateway';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import * as kms from 'aws-cdk-lib/aws-kms';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as logs from 'aws-cdk-lib/aws-logs';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Annotations } from 'aws-cdk-lib';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { Construct } from 'constructs';
 
@@ -16,21 +11,12 @@ export function applyComplianceGuardrails(stack: cdk.Stack): void {
   suppressCommonNagViolations(stack);
 }
 
-export function applyPlatformConstructNagSuppressions(scope: Construct): void {
-  NagSuppressions.addResourceSuppressionsByPath(
-    cdk.Stack.of(scope),
-    `${cdk.Stack.of(scope).stackName}/DemoApiService/ServiceDataKey`,
-    [{ id: 'AwsSolutions-KMS5', reason: 'CMK rotation is enabled via enableKeyRotation: true' }],
-  );
-}
-
 class TagEnforcementAspect implements cdk.IAspect {
   visit(node: Construct): void {
     if (node instanceof cdk.Stack) {
-      const tags = cdk.Tags.of(node).tagValues();
       for (const tag of REQUIRED_TAGS) {
-        if (!tags[tag]) {
-          node.node.addError(`Stack "${node.stack.stackName}" is missing required governance tag "${tag}". Required tags: ${REQUIRED_TAGS.join(', ')}.`);
+        if (!cdk.Tags.of(node).hasTag(tag)) {
+          Annotations.of(node).addError(`Stack "${node.stackName}" is missing required governance tag "${tag}". Required tags: ${REQUIRED_TAGS.join(', ')}.`);
         }
       }
     }
