@@ -159,7 +159,7 @@ export class ApiLambdaDynamoService extends constructs.Construct {
     });
 
     const retryQueue = this.retryQueue;
-    cdk.Aspects.of(cdk.Stack.of(this)).add({
+    cdk.Aspects.of(this).add({
       visit(node: constructs.IConstruct): void {
         if (node instanceof lambda.CfnFunction && !node.deadLetterConfig) {
           node.deadLetterConfig = { targetArn: retryQueue.queueArn };
@@ -272,7 +272,7 @@ function validateProps(props: ApiLambdaDynamoServiceProps): void {
     throw new Error('ApiLambdaDynamoService recommendedPathTemplatePath must be a non-empty string.');
   }
 
-  if (props.cors?.allowOrigins.some((origin) => origin === '*')) {
+  if (props.cors?.allowOrigins?.some((origin) => origin === '*')) {
     throw new Error('ApiLambdaDynamoService cors.allowOrigins must not include wildcard origins.');
   }
 }
