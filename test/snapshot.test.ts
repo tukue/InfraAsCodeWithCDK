@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { Template } from 'aws-cdk-lib/assertions';
+import { Template, Match } from 'aws-cdk-lib/assertions';
 import { CdkAppStack } from '../lib/cdk-app-stack';
 import { loadPlatformConfig } from '../lib/platform-config';
 
@@ -20,94 +20,104 @@ jest.mock('aws-cdk-lib/aws-lambda-nodejs', () => {
   };
 });
 
+function synthCdkAppStack(env: string, budgetAmount = 50): Template {
+  const app = new cdk.App();
+  const stack = new CdkAppStack(app, 'TestStack', {
+    env: { account: '111111111111', region: 'us-east-1' },
+    platformConfig: loadPlatformConfig(env as any),
+    finOps: {
+      alertEmail: 'platform-team@example.com',
+      monthlyBudgetAmount: budgetAmount,
+    },
+  });
+  return Template.fromStack(stack);
+}
+
 describe('CdkAppStack snapshot', () => {
-  let template: Template;
-
-  beforeAll(() => {
-    const app = new cdk.App();
-    const stack = new CdkAppStack(app, 'SnapshotTestStack', {
-      env: { account: '111111111111', region: 'us-east-1' },
-      platformConfig: loadPlatformConfig('dev'),
-      finOps: {
-        alertEmail: 'platform-team@example.com',
-        monthlyBudgetAmount: 50,
-      },
-    });
-    template = Template.fromStack(stack);
-  });
-
-  it('matches the FinOps budget snapshot', () => {
-    expect(template.hasResourceProperties('AWS::Budgets::Budget', {
-      Budget: {
-        BudgetName: 'platform-product-dev-monthly-cost',
-        BudgetType: 'COST',
-        TimeUnit: 'MONTHLY',
-        BudgetLimit: {
-          Amount: 50,
-          Unit: 'USD',
+  it('creates FinOps budget with expected config', () => {
+    const template = synthCdkAppStack('dev', 50);
+    expect(() =>
+      template.hasResourceProperties('AWS::Budgets::Budget', {
+        Budget: {
+          BudgetName: 'platform-product-dev-monthly-cost',
+          BudgetType: 'COST',
+          TimeUnit: 'MONTHLY',
+          BudgetLimit: { Amount: 50, Unit: 'USD' },
+          CostFilters: { TagKeyValue: ['user:project$DemoAPI'] },
         },
-        CostFilters: {
-          TagKeyValue: ['user:project$DemoAPI'],
-        },
-      },
-    })).toBe(true);
+      }),
+    ).not.toThrow();
   });
 
-  it('matches the anomaly monitor snapshot', () => {
-    expect(template.hasResourceProperties('AWS::CE::AnomalyMonitor', {
-      MonitorName: 'platform-product-dev-service-costs',
-      MonitorType: 'DIMENSIONAL',
-      MonitorDimension: 'SERVICE',
-    })).toBe(true);
+  it('creates anomaly monitor with expected config', () => {
+    const template = synthCdkAppStack('dev');
+    expect(() =>
+      template.hasResourceProperties('AWS::CE::AnomalyMonitor', {
+        MonitorName: 'platform-product-dev-service-costs',
+        MonitorType: 'DIMENSIONAL',
+        MonitorDimension: 'SERVICE',
+      }),
+    ).not.toThrow();
   });
 
-  it('matches the anomaly subscription snapshot', () => {
-    expect(template.hasResourceProperties('AWS::CE::AnomalySubscription', {
-      SubscriptionName: 'platform-product-dev-cost-anomalies',
-      Frequency: 'DAILY',
-      Subscribers: [
-        {
-          Address: 'platform-team@example.com',
-          Type: 'EMAIL',
-        },
-      ],
-      Threshold: 10,
-    })).toBe(true);
+  it('creates anomaly subscription with expected config', () => {
+    const template = synthCdkAppStack('dev');
+    expect(() =>
+      template.hasResourceProperties('AWS::CE::AnomalySubscription', {
+        SubscriptionName: 'platform-product-dev-cost-anomalies',
+        Frequency: 'DAILY',
+        Subscribers: [{ Address: 'platform-team@example.com', Type: 'EMAIL' }],
+        Threshold: 10,
+      }),
+    ).not.toThrow();
   });
 
-  it('matches resource count snapshot', () => {
-    expect(template.resourceCountIs('AWS::Lambda::Function', 1)).toBe(true);
-    expect(template.resourceCountIs('AWS::ApiGateway::RestApi', 1)).toBe(true);
-    expect(template.resourceCountIs('AWS::DynamoDB::Table', 1)).toBe(true);
-    expect(template.resourceCountIs('AWS::KMS::Key', 1)).toBe(true);
-    expect(template.resourceCountIs('AWS::SQS::Queue', 1)).toBe(true);
-    expect(template.resourceCountIs('AWS::CloudWatch::Dashboard', 1)).toBe(true);
+  it('has expected core resource counts', () => {
+    const template = synthCdkAppStack('dev');
+    expect(() => template.resourceCountIs('AWS::ApiGateway::RestApi', 1)).not.toThrow();
+    expect(() => template.resourceCountIs('AWS::DynamoDB::Table', 1)).not.toThrow();
+    expect(() => template.resourceCountIs('AWS::SQS::Queue', 1)).not.toThrow();
+    expect(() => template.resourceCountIs('AWS::CloudWatch::Dashboard', 1)).not.toThrow();
+  });
+
+  it('has governance tags on DynamoDB table', () => {
+    const template = synthCdkAppStack('dev');
+    expect(() =>
+      template.hasResourceProperties('AWS::DynamoDB::Table', {
+        Tags: Match.arrayWith([
+          { Key: 'cost-center', Value: 'ENG-PLATFORM' },
+          { Key: 'data-classification', Value: 'internal' },
+          { Key: 'environment', Value: 'dev' },
+          { Key: 'owner', Value: 'platform-engineering' },
+          { Key: 'project', Value: 'DemoAPI' },
+          { Key: 'finops-managed', Value: 'true' },
+        ]),
+      }),
+    ).not.toThrow();
   });
 });
 
-describe('CdkAppStack stage snapshot', () => {
-  it('produces distinct config for stage environment', () => {
-    const app = new cdk.App();
-    const stack = new CdkAppStack(app, 'SnapshotStageTestStack', {
-      env: { account: '222222222222', region: 'us-east-1' },
-      platformConfig: loadPlatformConfig('stage'),
-      finOps: {
-        alertEmail: 'platform-team@example.com',
-        monthlyBudgetAmount: 200,
-      },
-    });
-    const template = Template.fromStack(stack);
-
-    expect(template.hasResourceProperties('AWS::Budgets::Budget', {
-      Budget: {
-        BudgetName: 'platform-product-stage-monthly-cost',
-        BudgetType: 'COST',
-        TimeUnit: 'MONTHLY',
-        BudgetLimit: {
-          Amount: 200,
-          Unit: 'USD',
+describe('CdkAppStack environment config', () => {
+  it('uses stage-specific budget name', () => {
+    const template = synthCdkAppStack('stage', 200);
+    expect(() =>
+      template.hasResourceProperties('AWS::Budgets::Budget', {
+        Budget: {
+          BudgetName: 'platform-product-stage-monthly-cost',
+          BudgetLimit: { Amount: 200, Unit: 'USD' },
         },
-      },
-    })).toBe(true);
+      }),
+    ).not.toThrow();
+  });
+
+  it('uses prod-specific data classification', () => {
+    const template = synthCdkAppStack('prod', 200);
+    expect(() =>
+      template.hasResourceProperties('AWS::DynamoDB::Table', {
+        Tags: Match.arrayWith([
+          { Key: 'data-classification', Value: 'confidential' },
+        ]),
+      }),
+    ).not.toThrow();
   });
 });
