@@ -1,12 +1,7 @@
 name: vault-approle-demo
 
 on:
-  workflow_dispatch:
-    inputs:
-      secret_path:
-        description: 'KV secret path under secret/ (e.g., jenkins/demo)'
-        required: true
-        default: 'jenkins/demo'
+  workflow_dispatch: {}
 
 permissions: {}
 
@@ -15,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      # Default secret path for demo; override by setting SECRET_PATH in workflow run environment variables
+      SECRET_PATH: jenkins/demo
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +25,7 @@ jobs:
         env:
           ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
           SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
-          SECRET_PATH: ${{ github.event.inputs.secret_path }}
+          SECRET_PATH: ${{ env.SECRET_PATH }}
         run: |
           set -euo pipefail
           echo "Logging in with AppRole (ROLE_ID masked by GitHub secrets)"
