@@ -18,7 +18,7 @@ function suppressCommonNagViolations(stack: cdk.Stack): void {
     },
     {
       id: 'AwsSolutions-L1',
-      reason: 'Node.js 18 is the chosen runtime version for this platform product.',
+      reason: 'Node.js 20 is the chosen runtime version for this platform product.',
     },
     {
       id: 'AwsSolutions-APIG4',

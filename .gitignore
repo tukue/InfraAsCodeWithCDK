@@ -1,6 +1,11 @@
-*.js
-!jest.config.js
+# Built JavaScript output (source is TypeScript)
+dist/**/*.js
+dist/**/*.d.ts
+
+# TypeScript declarations
 *.d.ts
+
+# Do NOT add blanket *.js ignores — jest.config.js and other configs are JS
 node_modules
 .DS_Store
 .env

@@ -1,0 +1,41 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - automerge
+    groups:
+      aws-cdk:
+        patterns:
+          - aws-cdk
+          - aws-cdk-lib
+          - cdk-nag
+      jest:
+        patterns:
+          - jest
+          - ts-jest
+          - "@types/jest"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
+
+  - package-ecosystem: terraform
+    directory: /terraform
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - terraform
