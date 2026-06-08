@@ -21,6 +21,6 @@
     "types": ["node", "jest", "aws-lambda"],
     "outDir": "dist"
   },
-  "exclude": ["node_modules", "cdk.out", "dist"],
+  "exclude": ["node_modules", "cdk.out", "dist", "applications/**"],
   "include": ["bin/**/*", "lib/**/*", "packages/**/*", "test/**/*"]
 }
