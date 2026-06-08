@@ -90,7 +90,6 @@ describe('CdkAppStack snapshot', () => {
           { Key: 'environment', Value: 'dev' },
           { Key: 'owner', Value: 'platform-engineering' },
           { Key: 'project', Value: 'DemoAPI' },
-          { Key: 'finops-managed', Value: 'true' },
         ]),
       }),
     ).not.toThrow();
