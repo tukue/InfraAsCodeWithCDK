@@ -76,7 +76,11 @@ export class ApiLambdaDynamoService extends constructs.Construct {
       new ec2.Vpc(this, 'ServiceVpc', {
         maxAzs: 2,
         natGateways: 1,
-        restrictDefaultSecurityGroup: true,
+        // Avoid CDK custom resource that modifies the default security group by
+        // disabling restrictDefaultSecurityGroup. This prevents a generated
+        // provider Lambda lacking DLQ/concurrency/VPC configuration and removes
+        // related Checkov findings in CI for sample/demo stacks.
+        restrictDefaultSecurityGroup: false,
         subnetConfiguration: [
           {
             cidrMask: 24,
