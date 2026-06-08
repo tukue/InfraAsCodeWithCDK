@@ -48,7 +48,7 @@ export class CdkAppStack extends cdk.Stack {
       : undefined;
     const monthlyBudgetName = `platform-product-${stageName}-monthly-cost`;
 
-    const monthlyBudget = new budgets.CfnBudget(this, 'MonthlyCostBudget', {
+    new budgets.CfnBudget(this, 'MonthlyCostBudget', {
       budget: {
         budgetName: monthlyBudgetName,
         budgetType: 'COST',

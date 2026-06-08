@@ -113,7 +113,7 @@ export const resolvePlatformEnvironment = (value?: string): PlatformEnvironment 
   }
 
   throw new Error(
-    `Invalid platform environment \"${value}\". Allowed values: dev, stage, prod.`,
+    `Invalid platform environment "${value}". Allowed values: dev, stage, prod.`,
   );
 };
 

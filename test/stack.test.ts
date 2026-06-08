@@ -12,7 +12,7 @@ jest.mock('aws-cdk-lib/aws-lambda-nodejs', () => {
   return {
     NodejsFunction: class NodejsFunction extends lambda.Function {
       constructor(scope: any, id: string, props: Record<string, unknown>) {
-        const { bundling, entry, ...lambdaProps } = props;
+        const { bundling: _bundling, entry: _entry, ...lambdaProps } = props;
 
         super(scope, id, {
           ...lambdaProps,
