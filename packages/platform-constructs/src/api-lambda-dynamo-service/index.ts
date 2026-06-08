@@ -45,6 +45,8 @@ export interface ApiLambdaDynamoServiceLambdaOverrides {
   readonly runtime: lambda.Runtime;
 }
 
+const DEFAULT_LAMBDA_RUNTIME = lambda.Runtime.NODEJS_20_X;
+
 export class ApiLambdaDynamoService extends constructs.Construct {
   public readonly api: apigateway.RestApi;
   public readonly backend: NodejsFunction;
@@ -103,6 +105,10 @@ export class ApiLambdaDynamoService extends constructs.Construct {
       ...props.overrides?.table,
     });
 
+    // Ensure platform-level finops tag is present on the table even if stack tags
+    // are not propagated in test/snapshot assertions.
+    cdk.Tags.of(this.table).add('finops-managed', 'true');
+
     this.table.addGlobalSecondaryIndex({
       indexName: this.itemsByCreatedAtIndexName,
       partitionKey: {
@@ -126,7 +132,7 @@ export class ApiLambdaDynamoService extends constructs.Construct {
     this.backend = new NodejsFunction(this, 'Function', {
       entry: props.handlerEntry ?? path.join(__dirname, '../../../../lib/function.ts'),
       handler: 'handler',
-      runtime: props.overrides?.lambda?.runtime ?? lambda.Runtime.NODEJS_18_X,
+      runtime: props.overrides?.lambda?.runtime ?? DEFAULT_LAMBDA_RUNTIME,
       environment: {
         APP_LOG_LEVEL: 'INFO',
         CATALOG_ENTITY_REF: props.catalogEntityRef,
@@ -145,7 +151,7 @@ export class ApiLambdaDynamoService extends constructs.Construct {
         minify: true,
         sourceMap: true,
         externalModules: ['aws-sdk'],
-        target: 'node18',
+        target: 'node20',
       },
       memorySize: props.overrides?.lambda?.memorySize ?? 1024,
       timeout: props.overrides?.lambda?.timeout ?? cdk.Duration.seconds(30),
