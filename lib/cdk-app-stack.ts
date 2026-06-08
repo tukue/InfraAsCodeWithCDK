@@ -250,6 +250,17 @@ export class CdkAppStack extends cdk.Stack {
     cdk.Tags.of(this).add('data-classification', props.platformConfig.dataClassification);
     cdk.Tags.of(this).add('finops-managed', 'true');
 
+    // Also add governance tags directly to the DynamoDB table to ensure
+    // assertions that inspect table properties find them (some test runners
+    // may not resolve propagated stack tags). Explicit tagging guarantees
+    // the expected tags appear on the table resource.
+    cdk.Tags.of(service.table).add('environment', props.platformConfig.environment);
+    cdk.Tags.of(service.table).add('project', props.platformConfig.project);
+    cdk.Tags.of(service.table).add('owner', props.platformConfig.owner);
+    cdk.Tags.of(service.table).add('cost-center', props.platformConfig.costCenter);
+    cdk.Tags.of(service.table).add('data-classification', props.platformConfig.dataClassification);
+    cdk.Tags.of(service.table).add('finops-managed', 'true');
+
     applyComplianceGuardrails(this);
     stackSuppressionsForApiLambdaDynamo(this, 'demo-api');
   }
