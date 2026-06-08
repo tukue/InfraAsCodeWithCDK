@@ -27,20 +27,20 @@ If you prefer environment variables, you can also export:
 
 ```bash
 export VAULT_ADDR=http://127.0.0.1:8200
-export VAULT_TOKEN=root
+export VAULT_TOKEN=REPLACE_WITH_TOKEN  # set locally; do NOT commit
 ```
 
 Then pass the username and password through `terraform.tfvars`, `-var` flags, or `TF_VAR_` environment variables:
 
 ```bash
 export TF_VAR_vault_username=alice
-export TF_VAR_vault_password='Str0ngP@ssw0rd!'
+export TF_VAR_vault_password='REPLACE_WITH_PASSWORD'  # set locally; do NOT commit
 ```
 
 or:
 
 ```bash
-terraform apply -var="vault_username=alice" -var="vault_password=Str0ngP@ssw0rd!"
+terraform apply -var="vault_username=alice" -var="vault_password='REPLACE_WITH_PASSWORD'"  # avoid embedding secrets in command history
 ```
 
 ## Example secret path
