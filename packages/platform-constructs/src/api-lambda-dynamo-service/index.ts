@@ -45,7 +45,7 @@ export interface ApiLambdaDynamoServiceLambdaOverrides {
   readonly runtime: lambda.Runtime;
 }
 
-const DEFAULT_LAMBDA_RUNTIME = lambda.Runtime.NODEJS_20_X;
+const DEFAULT_LAMBDA_RUNTIME = lambda.Runtime.NODEJS_18_X;
 
 export class ApiLambdaDynamoService extends constructs.Construct {
   public readonly api: apigateway.RestApi;
