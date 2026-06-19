@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as cwActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -60,9 +61,9 @@ export class PlatformObservability extends Construct {
       alarmDescription: 'API Gateway has 5xx responses in the last 5 minutes',
     });
 
-    this.lambdaErrorsAlarm.addAlarmAction(new cloudwatch.actions.SnsAction(props.alarmTopic));
-    this.lambdaDurationAlarm.addAlarmAction(new cloudwatch.actions.SnsAction(props.alarmTopic));
-    this.api5xxAlarm.addAlarmAction(new cloudwatch.actions.SnsAction(props.alarmTopic));
+    this.lambdaErrorsAlarm.addAlarmAction(new cwActions.SnsAction(props.alarmTopic));
+    this.lambdaDurationAlarm.addAlarmAction(new cwActions.SnsAction(props.alarmTopic));
+    this.api5xxAlarm.addAlarmAction(new cwActions.SnsAction(props.alarmTopic));
 
     this.compositeAlarm = new cloudwatch.CompositeAlarm(this, 'PlatformCompositeAlarm', {
       alarmRule: cloudwatch.AlarmRule.anyOf(
@@ -74,7 +75,7 @@ export class PlatformObservability extends Construct {
       actionsEnabled: true,
     });
 
-    this.compositeAlarm.addAlarmAction(new cloudwatch.actions.SnsAction(props.alarmTopic));
+    this.compositeAlarm.addAlarmAction(new cwActions.SnsAction(props.alarmTopic));
 
     this.dashboard = new cloudwatch.Dashboard(this, 'ObservabilityDashboard', {
       dashboardName: `platform-product-${props.stageName}-observability`,

@@ -173,7 +173,7 @@ export class CdkAppStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'CompositeAlarmName', {
-      value: observability.compositeAlarm.compositeAlarmName,
+      value: observability.compositeAlarm.alarmName,
       description: 'Composite alarm covering all platform alerts',
       exportName: `${this.stackName}-composite-alarm-name`,
     });
