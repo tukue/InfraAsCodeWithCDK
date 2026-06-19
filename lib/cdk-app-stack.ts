@@ -1,14 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
 import * as budgets from 'aws-cdk-lib/aws-budgets';
 import * as ce from 'aws-cdk-lib/aws-ce';
-import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
-import * as cwActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import { ApiLambdaDynamoService } from '../packages/platform-constructs/src';
 import { PlatformConfig } from './platform-config';
 import { enforceAlbWafAssociations } from './security-guardrails';
 import { applyComplianceGuardrails, stackSuppressionsForApiLambdaDynamo } from './platform-compliance';
+import { PlatformObservability } from './platform-observability';
+import { getPlatformMetadata } from './platform-version';
 
 export interface CdkAppStackProps extends cdk.StackProps {
   readonly platformConfig: PlatformConfig;
@@ -110,78 +110,13 @@ export class CdkAppStack extends cdk.Stack {
       masterKey: service.encryptionKey,
     });
 
-    const lambdaErrorsAlarm = new cloudwatch.Alarm(this, 'LambdaErrorsAlarm', {
-      metric: service.backend.metricErrors({
-        period: cdk.Duration.minutes(5),
-        statistic: 'sum',
-      }),
-      threshold: 1,
-      evaluationPeriods: 1,
-      datapointsToAlarm: 1,
-      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
-      alarmDescription: 'Lambda function has errors in the last 5 minutes',
+    const observability = new PlatformObservability(this, 'Observability', {
+      stageName,
+      backend: service.backend,
+      backendLogGroup: service.lambdaApplicationLogs,
+      api: service.api,
+      alarmTopic,
     });
-
-    const lambdaDurationAlarm = new cloudwatch.Alarm(this, 'LambdaDurationP95Alarm', {
-      metric: service.backend.metricDuration({
-        period: cdk.Duration.minutes(5),
-        statistic: 'p95',
-      }),
-      threshold: 2000,
-      evaluationPeriods: 2,
-      datapointsToAlarm: 2,
-      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
-      alarmDescription: 'Lambda p95 duration is above 2 seconds',
-    });
-
-    const api5xxAlarm = new cloudwatch.Alarm(this, 'Api5xxAlarm', {
-      metric: service.api.metricServerError({
-        period: cdk.Duration.minutes(5),
-        statistic: 'sum',
-      }),
-      threshold: 1,
-      evaluationPeriods: 1,
-      datapointsToAlarm: 1,
-      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
-      alarmDescription: 'API Gateway has 5xx responses in the last 5 minutes',
-    });
-
-    lambdaErrorsAlarm.addAlarmAction(new cwActions.SnsAction(alarmTopic));
-    lambdaDurationAlarm.addAlarmAction(new cwActions.SnsAction(alarmTopic));
-    api5xxAlarm.addAlarmAction(new cwActions.SnsAction(alarmTopic));
-
-    const observabilityDashboard = new cloudwatch.Dashboard(this, 'PlatformObservabilityDashboard', {
-      dashboardName: `${cdk.Stack.of(this).stackName}-platform-observability`,
-    });
-
-    observabilityDashboard.addWidgets(
-      new cloudwatch.GraphWidget({
-        title: 'Lambda Invocations / Errors',
-        left: [service.backend.metricInvocations(), service.backend.metricErrors()],
-        width: 12,
-      }),
-      new cloudwatch.GraphWidget({
-        title: 'Lambda Duration (p50/p95)',
-        left: [
-          service.backend.metricDuration({ statistic: 'p50' }),
-          service.backend.metricDuration({ statistic: 'p95' }),
-        ],
-        width: 12,
-      }),
-      new cloudwatch.GraphWidget({
-        title: 'API Gateway Requests / 5XX',
-        left: [service.api.metricCount(), service.api.metricServerError()],
-        width: 12,
-      }),
-      new cloudwatch.GraphWidget({
-        title: 'API Gateway Latency (p50/p95)',
-        left: [
-          service.api.metricLatency({ statistic: 'p50' }),
-          service.api.metricLatency({ statistic: 'p95' }),
-        ],
-        width: 12,
-      }),
-    );
 
     new cdk.CfnOutput(this, 'ApiUrl', {
       value: service.api.url,
@@ -226,9 +161,21 @@ export class CdkAppStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'ObservabilityDashboardName', {
-      value: observabilityDashboard.dashboardName,
+      value: observability.dashboard.dashboardName,
       description: 'CloudWatch dashboard for platform observability',
       exportName: `${this.stackName}-observability-dashboard-name`,
+    });
+
+    new cdk.CfnOutput(this, 'PlatformVersion', {
+      value: getPlatformMetadata().version,
+      description: 'Platform version',
+      exportName: `${this.stackName}-platform-version`,
+    });
+
+    new cdk.CfnOutput(this, 'CompositeAlarmName', {
+      value: observability.compositeAlarm.compositeAlarmName,
+      description: 'Composite alarm covering all platform alerts',
+      exportName: `${this.stackName}-composite-alarm-name`,
     });
 
     new cdk.CfnOutput(this, 'ObservabilityAlarmTopicArn', {

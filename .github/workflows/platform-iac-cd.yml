@@ -1,0 +1,124 @@
+name: platform-iac-cd
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'platform/**'
+      - 'packages/**'
+      - 'lib/**'
+      - 'bin/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/platform-iac-cd.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    outputs:
+      stacks: ${{ steps.cdk-diff.outputs.stacks }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: CDK synth
+        run: npm run synth
+
+      - name: CDK diff
+        id: cdk-diff
+        run: |
+          npx cdk diff --fail 2>&1 | tee cdk-diff-output.txt || true
+          if grep -q "There were no differences" cdk-diff-output.txt; then
+            echo "stacks=[]" >> "$GITHUB_OUTPUT"
+          else
+            echo "stacks=changed" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy-dev:
+    needs: diff
+    if: needs.diff.outputs.stacks != '[]'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: CDK deploy to dev
+        run: npx cdk deploy --all --require-approval never -c platformEnv=dev
+        env:
+          AWS_REGION: us-east-1
+
+  deploy-stage:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: stage
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: CDK synth stage
+        run: npx cdk synth -c platformEnv=stage
+
+      - name: CDK deploy to stage
+        run: npx cdk deploy --all --require-approval never -c platformEnv=stage
+        env:
+          AWS_REGION: us-east-1
+
+  deploy-prod:
+    needs: deploy-stage
+    runs-on: ubuntu-latest
+    environment: prod
+    concurrency: prod-deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: CDK synth prod
+        run: npx cdk synth -c platformEnv=prod
+
+      - name: Manual approval gate
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ secrets.GITHUB_TOKEN }}
+          approvers: ${{ vars.PROD_APPROVERS }}
+
+      - name: CDK deploy to prod
+        run: npx cdk deploy --all --require-approval never -c platformEnv=prod
+        env:
+          AWS_REGION: us-east-1

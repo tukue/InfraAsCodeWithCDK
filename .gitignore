@@ -25,3 +25,15 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# Local development
+.localstack/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Coverage
+coverage/

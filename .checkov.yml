@@ -1,0 +1,36 @@
+---
+# Checkov configuration for platform IaC scanning
+# https://www.checkov.io/5.Policy%20Language/Configuration%20Reference.html
+
+compact: true
+directory:
+  - .
+framework:
+  - cloudformation
+  - terraform
+  - github_actions
+skip-framework:
+  - dockerfile
+  - secrets
+  - serverless
+  - helm
+  - kubernetes
+  - bicep
+  - arm
+  - ansible
+
+skip-path:
+  - cdk.out
+  - node_modules
+  - .git
+  - dist
+  - coverage
+
+quiet: true
+soft-fail: false
+
+output:
+  - cli
+  - sarif
+
+summary-position: bottom

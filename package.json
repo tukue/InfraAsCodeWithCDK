@@ -1,6 +1,6 @@
 {
   "name": "infra-as-code-with-cdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "bin": {
     "infra-as-code-with-cdk": "bin/app.js"
   },
@@ -8,6 +8,8 @@
     "build": "tsc -p tsconfig.build.json",
     "watch": "tsc -w",
     "test": "jest",
+    "test:contract": "jest test/contract",
+    "test:all": "jest --testPathPattern='\\.test\\.ts$'",
     "cdk": "cdk",
     "deploy": "cdk deploy",
     "destroy": "cdk destroy",
@@ -16,7 +18,8 @@
     "format": "prettier --check '**/*.ts' '**/*.json' '**/*.yml' '**/*.yaml' '**/*.md'",
     "format:fix": "prettier --write '**/*.ts' '**/*.json' '**/*.yml' '**/*.yaml' '**/*.md'",
     "coverage": "jest --coverage",
-    "precommit": "npm run build && npm run lint && npm test"
+    "precommit": "npm run build && npm run lint && npm test",
+    "validate": "npm run build && npm run lint && npm test && npm run synth"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.122",
