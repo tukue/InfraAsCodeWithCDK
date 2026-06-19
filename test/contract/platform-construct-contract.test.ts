@@ -21,11 +21,11 @@ describe('ApiLambdaDynamoService contract', () => {
     template.resourceCountIs('AWS::ApiGateway::RestApi', 1);
   });
 
-  it('must create a Lambda function', () => {
+  it('must create a Lambda function for the backend', () => {
     const stack = createTestStack();
     new ApiLambdaDynamoService(stack, 'TestService', baseProps);
     const template = Template.fromStack(stack);
-    template.resourceCountIs('AWS::Lambda::Function', 1);
+    template.resourceCountIs('AWS::Lambda::Function', 2);
   });
 
   it('must create a DynamoDB table', () => {
