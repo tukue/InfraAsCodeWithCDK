@@ -6,6 +6,22 @@ A production-hardened **Internal Developer Platform (IDP)** reference implementa
 
 ---
 
+## Consulting Landing Section
+
+This repository is packaged as a practical consulting accelerator for organizations moving from fragmented infrastructure delivery to a measurable platform-as-a-product model.
+
+| Client Problem | Consulting Outcome | Repository Evidence |
+|---|---|---|
+| Teams ship services through inconsistent project setup and manual infrastructure handoffs. | Standardized golden paths reduce time to first deployment and make ownership visible. | Backstage templates, service catalog metadata, reusable CDK constructs, onboarding guide |
+| Security and compliance checks arrive late in delivery. | Guardrails shift policy feedback into pull requests without blocking developer flow unnecessarily. | OPA/Conftest rules, Checkov and Trivy workflows, CDK security aspects |
+| Platform, application, and environment responsibilities are unclear. | Operating model clarifies ownership, release cadence, intake, and measurable adoption. | Platform product operating model, environment config, platform/application folder split |
+| Reliability and cost issues are detected after customer impact. | Default telemetry and FinOps controls make operational health visible from the first service. | CloudWatch dashboards, alarms, structured logs, X-Ray tracing, AWS Budgets, Cost Explorer |
+| Leadership needs a roadmap, not only implementation detail. | Current-state assessment, target-state architecture, maturity scorecard, and phased engagement plan. | Case study, scorecard, progress tracker, architecture diagrams |
+
+**Engagement offer:** assess the current platform, define the target operating model, implement practical CDK/Terraform/GitOps foundations, and leave the client with scorecards and adoption metrics that connect engineering work to business outcomes.
+
+---
+
 ## What This Project Demonstrates
 
 | Skill Area | What's Implemented |
@@ -32,7 +48,72 @@ A production-hardened **Internal Developer Platform (IDP)** reference implementa
 - OPA/Conftest policy bundle for Kubernetes deployment security checks
 - Day-2 DX helpers via `Makefile`
 
+## Technical Feature to Consulting Outcome Map
+
+| Technical Feature | Practical Implementation | Consulting Outcome |
+|---|---|---|
+| AWS CDK constructs | `ApiLambdaDynamoService` and typed environment config | Repeatable infrastructure patterns reduce bespoke project delivery |
+| Terraform Vault baseline | Minimal Vault policy and secret provisioning example | Shows how secrets ownership can be standardized without overbuilding a full secrets platform |
+| GitOps manifests | Argo CD-ready sample application and Kustomize structure | Creates an auditable deployment model with clear promotion boundaries |
+| OPA/Conftest policies | Kubernetes security rules checked in CI | Converts compliance expectations into fast developer feedback |
+| Backstage scaffolder templates | Recommended-path service template with catalog metadata | Enables self-service onboarding and platform adoption tracking |
+| Observability defaults | CloudWatch dashboard, alarms, structured logs, X-Ray | Reduces mean time to detect and gives teams a first operational baseline |
+| FinOps controls | Budgets, anomaly detection, governance tags | Makes cost accountability part of the platform contract |
+
 ## Architecture
+
+### Current State vs Target State
+
+```mermaid
+flowchart LR
+    subgraph Current["Current state: project-led delivery"]
+        A1["Application teams"]
+        A2["Manual repo setup"]
+        A3["Single-stack IaC patterns"]
+        A4["Late security review"]
+        A5["Limited shared telemetry"]
+        A1 --> A2 --> A3 --> A4 --> A5
+    end
+
+    subgraph Target["Target state: platform-led delivery"]
+        B1["Backstage self-service"]
+        B2["Golden-path templates"]
+        B3["CDK and Terraform modules"]
+        B4["GitOps promotion"]
+        B5["Policy, observability, FinOps by default"]
+        B1 --> B2 --> B3 --> B4 --> B5
+    end
+
+    Current -->|"consulting engagement: assess, design, implement, enable"| Target
+```
+
+```mermaid
+flowchart TB
+    subgraph ClientOutcomes["Consulting outcomes"]
+        O1["Faster onboarding"]
+        O2["Lower delivery risk"]
+        O3["Clearer ownership"]
+        O4["Operational visibility"]
+        O5["Measurable maturity"]
+    end
+
+    subgraph PlatformCapabilities["Technical capabilities"]
+        C1["Backstage templates"]
+        C2["CDK constructs"]
+        C3["Terraform Vault baseline"]
+        C4["GitOps and policy checks"]
+        C5["Dashboards, alarms, cost controls"]
+    end
+
+    C1 --> O1
+    C2 --> O2
+    C3 --> O2
+    C4 --> O3
+    C4 --> O2
+    C5 --> O4
+    C1 --> O5
+    C4 --> O5
+```
 
 ```mermaid
 %%{init: {"themeVariables": {"fontFamily": "monospace"}}}%%
@@ -316,7 +397,9 @@ kubeconform validation → Conftest OPA policy checks
 |---|---|
 | `docs/platform-product-architecture.md` | Target IDP architecture (5 planes: control, runtime, delivery, governance, observability) |
 | `docs/platform-product-operating-model.md` | Product mission, ownership matrix, capabilities, intake/prioritization, KPIs, rituals |
-| `docs/platform-product-progress.md` | 10 workstreams with status, %, KPIs, and next milestones |
+| `docs/platform-product-progress.md` | Client engagement plan with phases, workstreams, KPIs, and next milestones |
+| `docs/platform-consulting-case-study.md` | Case study narrative for a platform engineering transformation engagement |
+| `docs/platform-maturity-scorecard.md` | Scorecard for assessing platform product maturity and prioritizing improvement work |
 | `docs/platform-product-repository-review-2026-04-08.md` | Comprehensive audit with risks, gaps, and prioritized 8-item improvement backlog |
 | `docs/platform-engineering-consulting-profile.md` | Portfolio framing: strategy → architecture → implementation → adoption |
 | `docs/observability-as-a-service.md` | OaaS maturity assessment + baseline implementation |
