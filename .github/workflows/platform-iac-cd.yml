@@ -20,6 +20,8 @@ jobs:
   diff:
     runs-on: ubuntu-latest
     environment: dev
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
     outputs:
       stacks: ${{ steps.cdk-diff.outputs.stacks }}
     steps:
@@ -38,7 +40,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: CDK synth
         run: npm run synth
@@ -58,6 +60,8 @@ jobs:
     if: needs.diff.outputs.stacks != '[]'
     runs-on: ubuntu-latest
     environment: dev
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,17 +78,17 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: CDK deploy to dev
         run: npx cdk deploy --all --require-approval never -c platformEnv=dev
-        env:
-          AWS_REGION: us-east-1
 
   deploy-stage:
     needs: deploy-dev
     runs-on: ubuntu-latest
     environment: stage
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -101,21 +105,21 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: CDK synth stage
         run: npx cdk synth -c platformEnv=stage
 
       - name: CDK deploy to stage
         run: npx cdk deploy --all --require-approval never -c platformEnv=stage
-        env:
-          AWS_REGION: us-east-1
 
   deploy-prod:
     needs: deploy-stage
     runs-on: ubuntu-latest
     environment: prod
     concurrency: prod-deploy
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -132,7 +136,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: CDK synth prod
         run: npx cdk synth -c platformEnv=prod
@@ -145,5 +149,3 @@ jobs:
 
       - name: CDK deploy to prod
         run: npx cdk deploy --all --require-approval never -c platformEnv=prod
-        env:
-          AWS_REGION: us-east-1
