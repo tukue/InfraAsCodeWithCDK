@@ -1,52 +1,92 @@
-# Terraform Vault Setup
+# Terraform Platform Foundations
 
-This folder contains a minimal Terraform configuration for integrating with a local Vault instance.
+This folder contains the Terraform slice of the platform reference implementation. CDK remains the primary AWS application/platform IaC in this repository; Terraform is intentionally scoped to external platform integrations where it is a strong fit, starting with Vault policy management.
 
-## What it does
+## What Terraform manages
 
-- Connects Terraform to Vault through the Vault provider
-- Creates a sample read policy for Jenkins
-- Writes a configurable KV v2 secret with a username and password
+- Reusable Vault policy modules.
+- Per-environment Vault policy roots for `dev`, `stage`, and `prod`.
+- Backend configuration examples for remote state and locking.
 
-## Prerequisites
+Terraform does **not** write application secret values. Secret values should be written through Vault operational workflows, CI runtime injection, or short-lived identity-based access. This avoids storing passwords in Terraform state.
 
-- Vault running locally at `http://127.0.0.1:8200`
-- A valid Vault token
-- Terraform installed
+## Structure
 
-## Quick Start
-
-```bash
-cd terraform
-copy terraform.tfvars.example terraform.tfvars
-terraform init
-terraform apply
+```text
+terraform/
+  modules/
+    vault-policy/                  # Reusable least-privilege Vault policy module
+  environments/
+    dev/
+      backend.hcl.example          # S3 state + DynamoDB lock example
+      main.tf
+      variables.tf
+      outputs.tf
+      terraform.tfvars.example
+    stage/
+    prod/
+  approle/                         # CI AppRole helper scripts and docs
+  main.tf                          # Local compatibility example using the same module
+  variables.tf
+  outputs.tf
+  terraform.tfvars.example
 ```
 
-If you prefer environment variables, you can also export:
+## Remote state and locking
+
+Each environment includes a `backend.hcl.example` file:
 
 ```bash
-export VAULT_ADDR=http://127.0.0.1:8200
-export VAULT_TOKEN=REPLACE_WITH_TOKEN  # set locally; do NOT commit
+cd terraform/environments/dev
+cp backend.hcl.example backend.hcl
+terraform init -backend-config=backend.hcl
 ```
 
-Then pass the username and password through `terraform.tfvars`, `-var` flags, or `TF_VAR_` environment variables:
+The backend examples use:
+
+- S3 for encrypted remote state.
+- DynamoDB for state locking.
+- One state key per environment.
+
+For local portfolio demos, use `terraform init -backend=false` during validation or keep the root `terraform/` example with local state. Do not use local state for shared environments.
+
+## Environment validation
 
 ```bash
-export TF_VAR_vault_username=alice
-export TF_VAR_vault_password='REPLACE_WITH_PASSWORD'  # set locally; do NOT commit
+cd terraform/environments/dev
+terraform init -backend=false
+terraform validate
+terraform plan -var-file=terraform.tfvars
 ```
 
-or:
+Repeat for `stage` and `prod`, or rely on `.github/workflows/terraform-iac-ci.yml` to validate all three environment roots on pull requests.
+
+## Secrets model
+
+Terraform creates policies such as:
+
+```hcl
+path "secret/data/apps/dev/ci" {
+  capabilities = ["read"]
+}
+```
+
+It does not create the secret payload at that path. Write secret values through an operational command such as:
 
 ```bash
-terraform apply -var="vault_username=alice" -var="vault_password='REPLACE_WITH_PASSWORD'"  # avoid embedding secrets in command history
+vault kv put secret/apps/dev/ci username=ci password=REPLACE_WITH_RUNTIME_SECRET
 ```
 
-## Example secret path
+For CI, prefer Vault OIDC auth. AppRole is included as a demo fallback under `terraform/approle/`.
 
-- `jenkins/demo`
+## CI expectations
 
-## Example policy
+The Terraform CI workflow runs:
 
-- `jenkins-read`
+- `terraform fmt -check`
+- `terraform init -backend=false`
+- `terraform validate`
+- Checkov Terraform scan
+- Trivy config scan
+
+Apply should be a separate protected workflow with GitHub Environments, environment-specific Vault auth, and approval for production.

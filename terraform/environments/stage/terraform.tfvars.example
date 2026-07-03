@@ -1,0 +1,3 @@
+vault_addr   = "https://vault.stage.example.com"
+vault_token  = "REPLACE_WITH_VAULT_TOKEN"
+secret_mount = "secret"

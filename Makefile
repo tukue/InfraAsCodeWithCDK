@@ -6,6 +6,7 @@ TAG ?= latest
 .PHONY: help setup build lint format format-fix test coverage \
         synth diff deploy destroy clean precommit audit \
         platform-check platform-plan platform-apply \
+        terraform-fmt terraform-validate terraform-plan \
         app-bootstrap app-deploy app-policy-test \
         dev-deps dev-start dev-stop dev-status \
         docs-serve security-check scorecard
@@ -35,6 +36,9 @@ help:
 	@echo '    make platform-check     # build + test + synth (full gate)'
 	@echo '    make platform-plan      # Plan platform changes for ENV'
 	@echo '    make platform-apply     # Apply platform changes for ENV'
+	@echo '    make terraform-fmt      # Check Terraform formatting'
+	@echo '    make terraform-validate # Validate Terraform environment root'
+	@echo '    make terraform-plan     # Plan Terraform changes for ENV'
 	@echo '    make security-check     # Run Checkov + Trivy IaC scanning'
 	@echo '    make scorecard          # Generate platform scorecard'
 	@echo ''
@@ -114,6 +118,17 @@ platform-plan:
 platform-apply:
 	@echo '[platform-apply] ENV=$(ENV)'
 	@echo 'Run approved deploy pipeline for $(ENV)'
+
+terraform-fmt:
+	terraform -chdir=terraform fmt -check -recursive
+
+terraform-validate:
+	terraform -chdir=terraform/environments/$(ENV) init -backend=false
+	terraform -chdir=terraform/environments/$(ENV) validate
+
+terraform-plan:
+	terraform -chdir=terraform/environments/$(ENV) init -backend=false
+	terraform -chdir=terraform/environments/$(ENV) plan -input=false
 
 security-check:
 	@echo '[security-check] Running Checkov scan...'

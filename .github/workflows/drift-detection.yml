@@ -75,7 +75,7 @@ jobs:
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `[Drift] Infrastructure drift detected in ${process.env['ENVIRONMENT']}`,
+              title: `[Drift] Infrastructure drift detected in ${{ matrix.environment }}`,
               body: body,
               labels: ['drift', 'platform']
             });

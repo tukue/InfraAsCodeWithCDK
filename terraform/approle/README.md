@@ -1,6 +1,6 @@
 Vault AppRole integration (CI-friendly)
 
-This guide shows how to provision a Vault AppRole for CI (e.g., GitHub Actions) and bind it to the `jenkins-read` policy created by Terraform.
+This guide shows how to provision a Vault AppRole for CI (e.g., GitHub Actions) and bind it to a read policy created by Terraform.
 
 Security notes:
 - Do NOT commit role_id or secret_id to VCS.
@@ -9,7 +9,7 @@ Security notes:
 
 Prerequisites:
 - Vault CLI installed and authenticated (VAULT_ADDR, VAULT_TOKEN set locally)
-- The `vault_policy.jenkins_read` is created by terraform/main.tf in this repo.
+- A Vault read policy is created by `terraform/main.tf` for local demos or by `terraform/environments/{dev,stage,prod}` for environment-specific usage.
 
 Create AppRole (example):
 
@@ -29,8 +29,9 @@ Create AppRole (example):
 
 Ordered integration (easy step-by-step)
 
-1) Provision baseline (policy & sample secret)
-   - Run `terraform init` and `terraform apply` in /terraform to create the `jenkins-read` policy and write the sample secret (local only).
+1) Provision baseline policy
+   - Run `terraform init` and `terraform apply` in `/terraform` for a local demo, or in `terraform/environments/<env>` for an environment-specific policy.
+   - Terraform creates the policy only; write the actual secret value through Vault operational workflows so secret material is not stored in Terraform state.
 
 2) Create an AppRole for CI
    - From a secure admin session run `./terraform/approle/create-approle.sh ci-role jenkins-read`.

@@ -10,29 +10,30 @@ variable "vault_token" {
   sensitive   = true
 }
 
-variable "secret_path" {
-  description = "Path for the sample secret written by Terraform."
+variable "environment" {
+  description = "Environment name used for policy naming and secret path conventions."
   type        = string
-  default     = "jenkins/demo"
-}
-
-variable "vault_username" {
-  description = "Username stored in Vault for the sample secret."
-  type        = string
+  default     = "local"
 
   validation {
-    condition     = trimspace(var.vault_username) != ""
-    error_message = "vault_username must not be empty."
+    condition     = can(regex("^[a-z][a-z0-9-]{1,20}$", var.environment))
+    error_message = "environment must start with a lowercase letter and contain only lowercase letters, numbers, and hyphens."
   }
 }
 
-variable "vault_password" {
-  description = "Password stored in Vault for the sample secret."
+variable "secret_mount" {
+  description = "Vault KV v2 mount that contains application secrets."
   type        = string
-  sensitive   = true
+  default     = "secret"
+}
+
+variable "secret_path" {
+  description = "Vault KV v2 secret path that CI is allowed to read. Terraform creates policy only; it does not write secret values."
+  type        = string
+  default     = "jenkins/demo"
 
   validation {
-    condition     = trimspace(var.vault_password) != ""
-    error_message = "vault_password must not be empty."
+    condition     = can(regex("^[A-Za-z0-9][A-Za-z0-9_./-]*$", var.secret_path))
+    error_message = "secret_path must be a non-empty Vault path using letters, numbers, underscore, dot, slash, or hyphen."
   }
 }
