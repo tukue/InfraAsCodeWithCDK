@@ -19,6 +19,7 @@ permissions:
 jobs:
   diff:
     runs-on: ubuntu-latest
+    environment: dev
     outputs:
       stacks: ${{ steps.cdk-diff.outputs.stacks }}
     steps:
@@ -32,6 +33,12 @@ jobs:
 
       - name: Install deps
         run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
 
       - name: CDK synth
         run: npm run synth
@@ -63,6 +70,12 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
       - name: CDK deploy to dev
         run: npx cdk deploy --all --require-approval never -c platformEnv=dev
         env:
@@ -83,6 +96,12 @@ jobs:
 
       - name: Install deps
         run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
 
       - name: CDK synth stage
         run: npx cdk synth -c platformEnv=stage
@@ -108,6 +127,12 @@ jobs:
 
       - name: Install deps
         run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
 
       - name: CDK synth prod
         run: npx cdk synth -c platformEnv=prod
