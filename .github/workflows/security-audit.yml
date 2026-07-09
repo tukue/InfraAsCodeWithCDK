@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
 
       - name: GitLeaks secret scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         continue-on-error: true
 
   iac-scan:
