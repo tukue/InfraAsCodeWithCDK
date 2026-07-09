@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "github.vscode-github-actions",
+    "ms-azuretools.vscode-docker",
+    "redhat.vscode-yaml",
+    "hashicorp.terraform",
+    "amazonwebservices.aws-toolkit-vscode",
+    "tsaleh.toggle-quotes",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.makefile-tools",
+    "eamodio.gitlens"
+  ]
+}

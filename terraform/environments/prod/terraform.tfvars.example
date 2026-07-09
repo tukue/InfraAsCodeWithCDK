@@ -1,0 +1,3 @@
+vault_addr   = "https://vault.prod.example.com"
+vault_token  = "REPLACE_WITH_VAULT_TOKEN"
+secret_mount = "secret"

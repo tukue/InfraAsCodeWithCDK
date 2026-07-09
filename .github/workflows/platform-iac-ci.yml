@@ -5,6 +5,8 @@ on:
     branches: [ main ]
     paths:
       - 'platform/**'
+      - 'packages/**'
+      - 'applications/examples/**'
       - 'lib/**'
       - 'bin/**'
       - 'test/**'
@@ -12,6 +14,7 @@ on:
       - 'package-lock.json'
       - 'jest.config.js'
       - '.github/workflows/platform-iac-ci.yml'
+      - '.github/workflows/terraform-iac-ci.yml'
 
 permissions:
   contents: read
@@ -32,13 +35,16 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: ESLint check
+        run: npm run lint
+
       - name: TypeScript build
         run: npm run build
 
-      - name: Unit and snapshot tests
-        run: npm test -- --ci
+      - name: Unit, snapshot, and compliance tests
+        run: npm test -- --ci --coverage
 
-      - name: CDK synth
+      - name: CDK synth with cdk-nag compliance guardrails
         run: npm run synth
 
       - name: Static security scan (Checkov)
@@ -51,8 +57,19 @@ jobs:
           output_file_path: console,results.sarif
           quiet: true
 
-      - name: Upload Checkov SARIF report
+      - name: Check for Checkov SARIF report
+        id: checkov-sarif
         if: always()
+        run: |
+          if [ -f results.sarif ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload Checkov SARIF report
+        if: always() && steps.checkov-sarif.outputs.exists == 'true'
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
@@ -65,4 +82,4 @@ jobs:
           skip-dirs: cdk.out,node_modules
           hide-progress: true
           severity: CRITICAL,HIGH
-          exit-code: '0'
+          exit-code: '1'

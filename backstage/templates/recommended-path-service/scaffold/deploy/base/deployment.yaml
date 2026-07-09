@@ -16,6 +16,13 @@ spec:
         app.kubernetes.io/name: ${{ values.name }}
         service: ${{ values.name }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: app
           image: ${{ values.imageRegistry }}/${{ values.name }}:0.1.0
@@ -36,3 +43,10 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL

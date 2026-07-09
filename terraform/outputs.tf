@@ -4,11 +4,11 @@ output "vault_addr" {
 }
 
 output "secret_path" {
-  description = "Path of the sample secret written to Vault."
-  value       = vault_kv_secret_v2.sample_secret.name
+  description = "Vault secret path covered by the read policy. Terraform does not write the secret value."
+  value       = var.secret_path
 }
 
 output "policy_name" {
-  description = "Name of the sample Vault policy."
-  value       = vault_policy.jenkins_read.name
+  description = "Name of the Vault policy."
+  value       = module.jenkins_read_policy.name
 }

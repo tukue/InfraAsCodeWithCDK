@@ -36,9 +36,10 @@ const recommendedPathTemplatePath =
 const recommendedPathCatalogPath =
   process.env.RECOMMENDED_PATH_CATALOG_PATH ?? 'catalog-info.yaml';
 
-const jsonHeaders = {
+const allowedOrigin = process.env.CORS_ALLOWED_ORIGIN ?? '';
+const jsonHeaders: Record<string, string> = {
   'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
+  ...(allowedOrigin ? { 'Access-Control-Allow-Origin': allowedOrigin } : {}),
 };
 
 const platformCapabilities: PlatformCapability[] = [

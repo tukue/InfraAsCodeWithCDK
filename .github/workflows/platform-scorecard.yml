@@ -1,0 +1,112 @@
+name: platform-scorecard
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  platform-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run platform governance checks
+        id: governance
+        continue-on-error: true
+        run: |
+          REPORT="# Platform Scorecard Report\n"
+          REPORT+="Generated: $(date -u)\n\n"
+
+          REPORT+="## Build Health\n"
+          if npm run build 2>/dev/null; then
+            REPORT+="- Build: ✅ Passing\n"
+          else
+            REPORT+="- Build: ❌ Failing\n"
+          fi
+
+          REPORT+="\n## Test Health\n"
+          if npm test 2>/dev/null; then
+            REPORT+="- Tests: ✅ Passing\n"
+          else
+            REPORT+="- Tests: ❌ Failing\n"
+          fi
+
+          REPORT+="\n## Lint Health\n"
+          if npm run lint 2>/dev/null; then
+            REPORT+="- Lint: ✅ Passing\n"
+          else
+            REPORT+="- Lint: ❌ Failing\n"
+          fi
+
+          REPORT+="\n## CDK Synth\n"
+          if npm run synth 2>/dev/null; then
+            REPORT+="- Synth: ✅ Passing\n"
+          else
+            REPORT+="- Synth: ❌ Failing\n"
+          fi
+
+          REPORT+="\n## Platform Artifacts\n"
+          REPORT+="- Total stacks: $(find lib -name '*.ts' | wc -l)\n"
+          REPORT+="- Platform constructs: $(find packages -name '*.ts' | wc -l)\n"
+          REPORT+="- Tests: $(find test -name '*.test.ts' | wc -l)\n"
+          REPORT+="- GitOps manifests: $(find applications/gitops -name '*.yaml' | wc -l)\n"
+          REPORT+="- Policy files: $(find applications/policy -name '*.rego' | wc -l)\n"
+          REPORT+="- Documentation files: $(find docs -name '*.md' | wc -l)\n"
+
+          REPORT+="\n## Security\n"
+          REPORT+="- cdk-nag suppressions: $(grep -c 'AwsSolutions-' lib/platform-compliance.ts 2>/dev/null || echo 0)\n"
+          REPORT+="- CI workflows: $(find .github/workflows -name '*.yml' | wc -l)\n"
+
+          echo "$REPORT" > scorecard-report.md
+
+      - name: Check for previous scorecard issue
+        id: find-issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'scorecard'
+            });
+            return issues.data.length > 0 ? issues.data[0].number : null;
+
+      - name: Create or update scorecard issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('scorecard-report.md', 'utf8');
+            const existingIssue = ${{ steps.find-issue.outputs.result || 'null' }};
+
+            if (existingIssue) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue,
+                body: report
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Platform Scorecard Report',
+                body: report,
+                labels: ['scorecard', 'platform']
+              });
+            }
