@@ -17,10 +17,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [dev, stage, prod]
+        include:
+          - name: root
+            path: terraform
+          - name: dev
+            path: terraform/environments/dev
+          - name: stage
+            path: terraform/environments/stage
+          - name: prod
+            path: terraform/environments/prod
     defaults:
       run:
-        working-directory: terraform/environments/${{ matrix.environment }}
+        working-directory: ${{ matrix.path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +39,8 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform fmt
-        run: terraform fmt -check -recursive ../..
+        working-directory: .
+        run: terraform -chdir=terraform fmt -check -recursive
 
       - name: Terraform init without backend
         run: terraform init -backend=false -input=false

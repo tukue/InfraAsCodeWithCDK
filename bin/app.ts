@@ -12,11 +12,12 @@ const monthlyBudgetAmount = parseMonthlyBudgetAmount(
   app.node.tryGetContext('monthlyBudgetAmount') ?? process.env.MONTHLY_BUDGET_AMOUNT,
 );
 
-new CdkAppStack(app, 'CdkAppStack', {
+new CdkAppStack(app, `CdkAppStack-${platformConfig.environment}`, {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
+  stackName: `platform-product-${platformConfig.environment}`,
   finOps: {
     alertEmail: finOpsAlertEmail,
     monthlyBudgetAmount,
