@@ -25,7 +25,7 @@
     "@types/aws-lambda": "^8.10.122",
     "@types/jest": "^29.5.5",
     "@types/node": "20.7.1",
-    "aws-cdk": "2.99.1",
+    "aws-cdk": "2.1132.0",
     "esbuild": "^0.21.5",
     "eslint": "^8.56.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -37,9 +37,9 @@
     "typescript": "~5.2.2"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.99.1",
+    "aws-cdk-lib": "2.261.0",
     "aws-sdk": "^2.1473.0",
-    "cdk-nag": "^2.28.0",
+    "cdk-nag": "^3.0.1",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }
