@@ -1,8 +1,4 @@
 import { APIGatewayEvent, Context, APIGatewayProxyResult } from 'aws-lambda';
-import * as AWS from 'aws-sdk';
-
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = process.env.DYNAMODB || '';
 
 export const handler = async (
   event: APIGatewayEvent,
