@@ -1,14 +1,45 @@
-const queryMock = jest.fn();
-const putMock = jest.fn();
+const mockQuery = jest.fn();
+const mockPut = jest.fn();
 
-jest.mock('aws-sdk', () => ({
-  DynamoDB: {
-    DocumentClient: jest.fn(() => ({
-      query: queryMock,
-      put: putMock,
-    })),
-  },
+const mockSend = jest.fn(async (command: { input: Record<string, unknown> }) => {
+  if ('KeyConditionExpression' in command.input) {
+    return mockQuery(command.input);
+  }
+
+  if (typeof command.input.Item === 'object') {
+    return mockPut(command.input);
+  }
+
+  throw new Error(`Unexpected DynamoDB command input: ${JSON.stringify(command.input)}`);
+});
+
+jest.mock('@aws-sdk/client-dynamodb', () => ({
+  DynamoDBClient: jest.fn().mockImplementation(() => ({})),
 }));
+
+jest.mock('@aws-sdk/lib-dynamodb', () => {
+  class QueryCommand {
+    readonly input: Record<string, unknown>;
+    constructor(input: Record<string, unknown>) {
+      this.input = input;
+    }
+  }
+
+  class PutCommand {
+    readonly input: Record<string, unknown>;
+    constructor(input: Record<string, unknown>) {
+      this.input = input;
+    }
+  }
+
+  return {
+    DynamoDBDocumentClient: {
+      from: jest.fn(() => ({ send: mockSend })),
+    },
+    QueryCommand,
+    PutCommand,
+  };
+});
 
 describe('Lambda handler', () => {
   beforeEach(() => {
@@ -21,8 +52,8 @@ describe('Lambda handler', () => {
     process.env.RECOMMENDED_PATH_TEMPLATE_PATH =
       'backstage/templates/recommended-path-service/template.yaml';
     process.env.RECOMMENDED_PATH_CATALOG_PATH = 'catalog-info.yaml';
-    queryMock.mockReset();
-    putMock.mockReset();
+    mockQuery.mockReset();
+    mockPut.mockReset();
   });
 
   it('returns health status for GET /health', async () => {
@@ -42,8 +73,7 @@ describe('Lambda handler', () => {
   });
 
   it('lists items for GET /items', async () => {
-    queryMock.mockReturnValue({
-      promise: jest.fn().mockResolvedValue({
+    mockQuery.mockResolvedValue({
         Items: [
           { id: '2', entityType: 'ITEM', name: 'newer', createdAt: '2024-01-02T00:00:00.000Z' },
           { id: '1', entityType: 'ITEM', name: 'older', createdAt: '2024-01-01T00:00:00.000Z' },
@@ -53,8 +83,7 @@ describe('Lambda handler', () => {
           entityType: 'ITEM',
           createdAt: '2024-01-01T00:00:00.000Z',
         },
-      }),
-    });
+      });
 
     const { handler } = await import('../lib/function');
 
@@ -68,7 +97,7 @@ describe('Lambda handler', () => {
     } as any);
 
     expect(response.statusCode).toBe(200);
-    expect(queryMock).toHaveBeenCalledWith({
+    expect(mockQuery).toHaveBeenCalledWith({
       TableName: 'demo-items-test',
       IndexName: 'ItemsByCreatedAtIndex',
       KeyConditionExpression: '#entityType = :entityType',
@@ -103,11 +132,9 @@ describe('Lambda handler', () => {
   });
 
   it('uses a default limit and decodes cursors for GET /items', async () => {
-    queryMock.mockReturnValue({
-      promise: jest.fn().mockResolvedValue({
+    mockQuery.mockResolvedValue({
         Items: [],
-      }),
-    });
+      });
 
     const cursorKey = {
       id: 'previous',
@@ -127,7 +154,7 @@ describe('Lambda handler', () => {
     } as any);
 
     expect(response.statusCode).toBe(200);
-    expect(queryMock).toHaveBeenCalledWith({
+    expect(mockQuery).toHaveBeenCalledWith({
       TableName: 'demo-items-test',
       IndexName: 'ItemsByCreatedAtIndex',
       KeyConditionExpression: '#entityType = :entityType',
@@ -164,7 +191,7 @@ describe('Lambda handler', () => {
     expect(JSON.parse(response.body)).toEqual({
       error: 'Query parameter "limit" must be an integer from 1 to 100',
     });
-    expect(queryMock).not.toHaveBeenCalled();
+    expect(mockQuery).not.toHaveBeenCalled();
   });
 
   it('returns platform metadata for GET /platform', async () => {
@@ -308,9 +335,7 @@ describe('Lambda handler', () => {
   });
 
   it('creates an item for POST /items', async () => {
-    putMock.mockReturnValue({
-      promise: jest.fn().mockResolvedValue(undefined),
-    });
+    mockPut.mockResolvedValue(undefined);
 
     const { handler } = await import('../lib/function');
 
@@ -322,7 +347,7 @@ describe('Lambda handler', () => {
     } as any);
 
     expect(response.statusCode).toBe(201);
-    expect(putMock).toHaveBeenCalledTimes(1);
+    expect(mockPut).toHaveBeenCalledTimes(1);
 
     const parsed = JSON.parse(response.body);
     expect(parsed.item.name).toBe('example item');

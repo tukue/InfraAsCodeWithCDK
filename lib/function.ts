@@ -1,6 +1,15 @@
 import { randomUUID } from 'crypto';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import * as AWS from 'aws-sdk';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  QueryCommand,
+  PutCommand,
+} from '@aws-sdk/lib-dynamodb';
+
+export interface DynamoDbKey {
+  [key: string]: unknown;
+}
 
 type ItemRecord = {
   id: string;
@@ -18,7 +27,7 @@ type PlatformCapability = {
 
 type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const dynamodb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const defaultItemsLimit = 25;
 const maxItemsLimit = 100;
 const itemEntityType = 'ITEM';
@@ -186,7 +195,7 @@ function parseItemsLimit(rawLimit?: string): number {
   return limit;
 }
 
-function encodeCursor(cursor?: AWS.DynamoDB.DocumentClient.Key): string | undefined {
+function encodeCursor(cursor?: DynamoDbKey): string | undefined {
   if (!cursor) {
     return undefined;
   }
@@ -194,7 +203,7 @@ function encodeCursor(cursor?: AWS.DynamoDB.DocumentClient.Key): string | undefi
   return Buffer.from(JSON.stringify(cursor), 'utf8').toString('base64url');
 }
 
-function decodeCursor(rawCursor?: string): AWS.DynamoDB.DocumentClient.Key | undefined {
+function decodeCursor(rawCursor?: string): DynamoDbKey | undefined {
   if (!rawCursor) {
     return undefined;
   }
@@ -214,7 +223,7 @@ function decodeCursor(rawCursor?: string): AWS.DynamoDB.DocumentClient.Key | und
   }
 }
 
-function isDynamoDbKey(value: unknown): value is AWS.DynamoDB.DocumentClient.Key {
+function isDynamoDbKey(value: unknown): value is DynamoDbKey {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -235,8 +244,8 @@ async function listItems(event: APIGatewayProxyEvent): Promise<APIGatewayProxyRe
   const limit = parseItemsLimit(event.queryStringParameters?.limit);
   const exclusiveStartKey = decodeCursor(event.queryStringParameters?.cursor);
 
-  const result = await dynamodb
-    .query({
+  const result = await dynamodb.send(
+    new QueryCommand({
       TableName: requireTableName(),
       IndexName: itemsByCreatedAtIndexName,
       KeyConditionExpression: '#entityType = :entityType',
@@ -249,8 +258,8 @@ async function listItems(event: APIGatewayProxyEvent): Promise<APIGatewayProxyRe
       Limit: limit,
       ExclusiveStartKey: exclusiveStartKey,
       ScanIndexForward: false,
-    })
-    .promise();
+    }),
+  );
 
   const items = (result.Items ?? []) as ItemRecord[];
 
@@ -272,12 +281,12 @@ async function createItem(event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
     createdAt: new Date().toISOString(),
   };
 
-  await dynamodb
-    .put({
+  await dynamodb.send(
+    new PutCommand({
       TableName: requireTableName(),
       Item: item,
-    })
-    .promise();
+    }),
+  );
 
   return json(201, {
     item,

@@ -45,7 +45,7 @@ export interface ApiLambdaDynamoServiceLambdaOverrides {
   readonly runtime: lambda.Runtime;
 }
 
-const DEFAULT_LAMBDA_RUNTIME = lambda.Runtime.NODEJS_18_X;
+const DEFAULT_LAMBDA_RUNTIME = lambda.Runtime.NODEJS_24_X;
 
 export class ApiLambdaDynamoService extends constructs.Construct {
   public readonly api: apigateway.RestApi;
@@ -153,8 +153,7 @@ export class ApiLambdaDynamoService extends constructs.Construct {
       bundling: {
         minify: true,
         sourceMap: true,
-        externalModules: ['aws-sdk'],
-        target: 'node20',
+        target: 'node24',
       },
       memorySize: props.overrides?.lambda?.memorySize ?? 1024,
       timeout: props.overrides?.lambda?.timeout ?? cdk.Duration.seconds(30),

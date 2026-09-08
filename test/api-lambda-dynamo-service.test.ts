@@ -62,7 +62,7 @@ describe('ApiLambdaDynamoService', () => {
     });
 
     template.hasResourceProperties('AWS::Lambda::Function', {
-      Runtime: 'nodejs18.x',
+      Runtime: 'nodejs24.x',
       TracingConfig: {
         Mode: 'Active',
       },
