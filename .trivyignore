@@ -1,0 +1,17 @@
+# Trivy IaC ignore rules
+# Format: <rule-id>[:<subcategory>] <comment>
+
+# CDK-generated Lambda IAM role with wildcard permissions is standard pattern
+AVD-AWS-0057 CDK-managed Lambda execution role uses scoped wildcard permissions
+
+# CDK custom resource provider uses managed policies
+AVD-AWS-0058 CDK custom resource provider requires managed IAM policies
+
+# VPC flow logs disabled for non-production environments
+AVD-AWS-0046 VPC flow logs not enabled in sample stack; enable for prod
+
+# SNS topic uses email subscriptions (internal alarm topic)
+AVD-AWS-0128 Internal alarm topic uses email subscriptions
+
+# API Gateway without WAF is acceptable for internal service APIs
+AVD-AWS-0092 IAM auth is primary mechanism; WAF at account level

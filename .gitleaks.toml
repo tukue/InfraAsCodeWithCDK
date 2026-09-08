@@ -1,0 +1,26 @@
+# Gitleaks configuration for secret scanning
+# https://github.com/gitleaks/gitleaks
+
+title = "InfraAsCodeWithCDK secret scanning config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known false positives and test fixtures"
+paths = [
+  # Test fixtures and mocks
+  "(?i)test/",
+  # Backstage scaffold templates - contains placeholder values
+  "(?i)backstage/templates/",
+  # Documentation examples
+  "(?i)docs/",
+  # Coverage reports
+  "(?i)coverage/",
+]
+
+[[rules]]
+id = "custom-platform-patterns"
+description = "Platform-specific secret patterns"
+regex = '''(?i)(platform_token|platform_secret|vault_token|vault_secret)\s*[:=]\s*['"].+['"]'''
+tags = ["platform", "vault"]

@@ -1,0 +1,81 @@
+name: drift-detection
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to check for drift'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  detect-drift:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, stage, prod]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: CDK synth
+        run: npm run synth
+
+      - name: Detect drift
+        id: drift-check
+        continue-on-error: true
+        run: |
+          echo "Checking for drift in ${{ matrix.environment }}..."
+          npx cdk diff -c platformEnv=${{ matrix.environment }} 2>&1 | tee drift-output.txt
+
+          if grep -q "There were no differences" drift-output.txt; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            echo "No drift detected in ${{ matrix.environment }}"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            echo "Drift detected in ${{ matrix.environment }}"
+          fi
+
+      - name: Create drift issue
+        if: steps.drift-check.outputs.drift == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const driftOutput = fs.readFileSync('drift-output.txt', 'utf8');
+            const body = `## Drift Detected in ${{ matrix.environment }}
+
+            Drift was detected during the scheduled drift detection run.
+
+            \`\`\`
+            ${driftOutput}
+            \`\`\`
+
+            **Action Required**: Review the changes and determine if they are expected or if remediation is needed.
+            `;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Drift] Infrastructure drift detected in ${{ matrix.environment }}`,
+              body: body,
+              labels: ['drift', 'platform']
+            });

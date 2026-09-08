@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  localstack:
+    image: localstack/localstack:4.2.0
+    container_name: infra-platform-localstack
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - SERVICES=cloudformation,lambda,apigateway,dynamodb,sqs,sns,kms,cloudwatch,iam,sts
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - DEBUG=${DEBUG:-0}
+      - LS_LOG=${LS_LOG:-warn}
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./.localstack}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  platform-dev:
+    image: node:20-alpine
+    container_name: infra-platform-dev
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - node_modules:/workspace/node_modules
+    environment:
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
+    depends_on:
+      - localstack
+    command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  node_modules:

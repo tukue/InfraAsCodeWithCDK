@@ -1,0 +1,6 @@
+# Copy this file to terraform.tfvars or pass values with -var.
+# DO NOT commit terraform.tfvars with real tokens. Use TF_VAR_* env vars or CI secret injection.
+vault_token  = "REPLACE_WITH_VAULT_TOKEN"
+environment  = "local"
+secret_mount = "secret"
+secret_path  = "jenkins/demo"

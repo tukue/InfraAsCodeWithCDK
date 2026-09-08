@@ -1,0 +1,39 @@
+name: vault-approle-demo
+
+on:
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  approle-demo:
+    runs-on: ubuntu-latest
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      # Default secret path for demo; override by setting SECRET_PATH in workflow run environment variables
+      SECRET_PATH: jenkins/demo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Vault CLI
+        uses: hashicorp/setup-vault@v2
+        with:
+          vault_version: '1.14.3'
+
+      - name: AppRole login and fetch secret
+        env:
+          ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+          SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+          SECRET_PATH: ${{ env.SECRET_PATH }}
+        run: |
+          set -euo pipefail
+          secret_file="$(mktemp)"
+          trap 'rm -f "$secret_file"' EXIT
+
+          echo "Logging in with AppRole (ROLE_ID masked by GitHub secrets)"
+          vault login -method=approle role_id="$ROLE_ID" secret_id="$SECRET_ID"
+          echo "Fetching secret from secret/$SECRET_PATH (field: password)"
+          vault kv get -field=password "secret/$SECRET_PATH" > "$secret_file"
+          echo "::add-mask::$(cat "$secret_file")"
+          echo "Successfully fetched secret (value masked)."

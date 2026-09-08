@@ -1,172 +1,235 @@
 import * as cdk from 'aws-cdk-lib';
+import * as budgets from 'aws-cdk-lib/aws-budgets';
+import * as ce from 'aws-cdk-lib/aws-ce';
+import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import { RemovalPolicy } from 'aws-cdk-lib';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as gateway from 'aws-cdk-lib/aws-apigateway';
-import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
-import * as path from 'path';
+import { ApiLambdaDynamoService } from '../packages/platform-constructs/src';
+import { PlatformConfig } from './platform-config';
+import { enforceAlbWafAssociations } from './security-guardrails';
+import { applyComplianceGuardrails, stackSuppressionsForApiLambdaDynamo } from './platform-compliance';
+import { PlatformObservability } from './platform-observability';
+import { getPlatformMetadata } from './platform-version';
+
+export interface CdkAppStackProps extends cdk.StackProps {
+  readonly platformConfig: PlatformConfig;
+  readonly finOps?: {
+    readonly alertEmail?: string;
+    readonly monthlyBudgetAmount?: number;
+  };
+}
+
+const itemsByCreatedAtIndexName = 'ItemsByCreatedAtIndex';
 
 export class CdkAppStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: CdkAppStackProps) {
     super(scope, id, props);
 
-    // DynamoDB Table Definition
-    const dynamodbTable = new dynamodb.Table(this, "DemoTable", {
-      partitionKey: { 
-      name: "id", 
-      type: dynamodb.AttributeType.STRING 
-      },
-      removalPolicy: RemovalPolicy.DESTROY,
-      pointInTimeRecovery: true,
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      tableName: 'DemoTable',
-      encryption: dynamodb.TableEncryption.AWS_MANAGED, // Enable encryption at rest
+    const stageName = props.platformConfig.environment;
+    const finOpsAlertEmail = props.finOps?.alertEmail;
+    const monthlyBudgetAmount = props.finOps?.monthlyBudgetAmount ?? 50;
+
+    enforceAlbWafAssociations(this);
+
+    const service = new ApiLambdaDynamoService(this, 'DemoApiService', {
+      serviceName: 'demo-api',
+      stageName,
+      catalogEntityRef: 'component:default/infra-as-code-with-cdk',
+      recommendedPathTemplateName: 'recommended-path-service',
+      recommendedPathTemplatePath: 'backstage/templates/recommended-path-service/template.yaml',
+      handlerEntry: `${__dirname}/function.ts`,
+      itemsByCreatedAtIndexName,
     });
 
-    // Lambda Function Definition
-    const lambdaBackend = new NodejsFunction(this, 'DemoFunction', {
-      entry: path.join(__dirname, 'function.ts'),
-      handler: 'handler',
-      runtime: lambda.Runtime.NODEJS_24_X,
-      environment: {
-      DYNAMODB_TABLE_NAME: dynamodbTable.tableName,
-      NODE_OPTIONS: '--enable-source-maps',
+    const budgetNotifications = finOpsAlertEmail
+      ? [
+          budgetNotificationWithEmail(finOpsAlertEmail, 'ACTUAL', 80),
+          budgetNotificationWithEmail(finOpsAlertEmail, 'FORECASTED', 100),
+        ]
+      : undefined;
+    const monthlyBudgetName = `platform-product-${stageName}-monthly-cost`;
+
+    new budgets.CfnBudget(this, 'MonthlyCostBudget', {
+      budget: {
+        budgetName: monthlyBudgetName,
+        budgetType: 'COST',
+        timeUnit: 'MONTHLY',
+        budgetLimit: {
+          amount: monthlyBudgetAmount,
+          unit: 'USD',
+        },
+        costFilters: {
+          TagKeyValue: [`user:project$${props.platformConfig.project}`],
+        },
       },
-      bundling: {
-      minify: true,
-      sourceMap: true,
-      target: 'node24',
-      },
-      memorySize: 1024,
-      timeout: cdk.Duration.seconds(30),
-      tracing: lambda.Tracing.ACTIVE,
-      logRetention: cdk.aws_logs.RetentionDays.ONE_WEEK, // Set log retention
+      notificationsWithSubscribers: budgetNotifications,
     });
 
-    // Grant DynamoDB Permissions to Lambda
-    dynamodbTable.grantReadWriteData(lambdaBackend.role!);
-
-    // WAFv2 Web ACL for API Gateway
-    const webAcl = new wafv2.CfnWebACL(this, 'ApiWebAcl', {
-      defaultAction: { allow: {} },
-      scope: 'REGIONAL',
-      visibilityConfig: {
-        cloudWatchMetricsEnabled: true,
-        metricName: 'apiWebAcl',
-        sampledRequestsEnabled: true,
-      },
-      rules: [
+    const anomalyMonitor = new ce.CfnAnomalyMonitor(this, 'ServiceCostAnomalyMonitor', {
+      monitorName: `platform-product-${stageName}-service-costs`,
+      monitorType: 'DIMENSIONAL',
+      monitorDimension: 'SERVICE',
+      resourceTags: [
         {
-          name: 'AWS-AWSManagedRulesCommonRuleSet',
-          priority: 1,
-          statement: {
-            managedRuleGroupStatement: {
-              vendorName: 'AWS',
-              name: 'AWSManagedRulesCommonRuleSet',
-            },
-          },
-          overrideAction: { none: {} },
-          visibilityConfig: {
-            cloudWatchMetricsEnabled: true,
-            metricName: 'awsCommonRuleSet',
-            sampledRequestsEnabled: true,
-          },
+          key: 'project',
+          value: props.platformConfig.project,
         },
         {
-          name: 'AWS-AWSManagedRulesSQLiRuleSet',
-          priority: 2,
-          statement: {
-            managedRuleGroupStatement: {
-              vendorName: 'AWS',
-              name: 'AWSManagedRulesSQLiRuleSet',
-            },
-          },
-          overrideAction: { none: {} },
-          visibilityConfig: {
-            cloudWatchMetricsEnabled: true,
-            metricName: 'awsSqliRuleSet',
-            sampledRequestsEnabled: true,
-          },
-        },
-        {
-          name: 'AWS-AWSManagedRulesKnownBadInputsRuleSet',
-          priority: 3,
-          statement: {
-            managedRuleGroupStatement: {
-              vendorName: 'AWS',
-              name: 'AWSManagedRulesKnownBadInputsRuleSet',
-            },
-          },
-          overrideAction: { none: {} },
-          visibilityConfig: {
-            cloudWatchMetricsEnabled: true,
-            metricName: 'awsKnownBadInputsRuleSet',
-            sampledRequestsEnabled: true,
-          },
+          key: 'environment',
+          value: stageName,
         },
       ],
     });
 
-    // API Gateway Definition
-    const api = new gateway.RestApi(this, "DemoApi", {
-      restApiName: "Demo API",
-      description: "Demo API with Lambda and DynamoDB",
-      defaultCorsPreflightOptions: {
-      allowOrigins: gateway.Cors.ALL_ORIGINS,
-      allowMethods: gateway.Cors.ALL_METHODS,
-      allowHeaders: [
-        'Content-Type',
-        'X-Amz-Date',
-        'Authorization',
-        'X-Api-Key',
-        'X-Amz-Security-Token'
-      ],
-      maxAge: cdk.Duration.days(1),
-      },
-      deployOptions: {
-      accessLogDestination: new gateway.LogGroupLogDestination(new cdk.aws_logs.LogGroup(this, 'ApiGatewayAccessLogs', {
-        retention: cdk.aws_logs.RetentionDays.ONE_WEEK, // Set log retention
-      })),
-      accessLogFormat: gateway.AccessLogFormat.jsonWithStandardFields(),
-      loggingLevel: gateway.MethodLoggingLevel.INFO,
-      dataTraceEnabled: true,
-      tracingEnabled: true,
-      },
+    if (finOpsAlertEmail) {
+      new ce.CfnAnomalySubscription(this, 'CostAnomalySubscription', {
+        subscriptionName: `platform-product-${stageName}-cost-anomalies`,
+        frequency: 'DAILY',
+        monitorArnList: [anomalyMonitor.attrMonitorArn],
+        subscribers: [
+          {
+            type: 'EMAIL',
+            address: finOpsAlertEmail,
+          },
+        ],
+        threshold: Math.max(10, monthlyBudgetAmount * 0.2),
+        resourceTags: [
+          {
+            key: 'project',
+            value: props.platformConfig.project,
+          },
+          {
+            key: 'environment',
+            value: stageName,
+          },
+        ],
+      });
+    }
+
+    const alarmTopic = new sns.Topic(this, 'ObservabilityAlarmTopic', {
+      displayName: 'Platform Observability Alerts',
+      masterKey: service.encryptionKey,
     });
 
-    // Associate WAFv2 Web ACL with API Gateway deployment stage
-    const deploymentStage = api.deploymentStage;
-    new wafv2.CfnWebACLAssociation(this, 'ApiWebAclAssociation', {
-      webAclArn: webAcl.attrArn,
-      resourceArn: deploymentStage.stageArn,
+    const observability = new PlatformObservability(this, 'Observability', {
+      stageName,
+      backend: service.backend,
+      backendLogGroup: service.lambdaApplicationLogs,
+      api: service.api,
+      alarmTopic,
     });
 
-    // API Resources and Methods
-    const rootIntegration = new gateway.LambdaIntegration(lambdaBackend);
-    api.root.addMethod('GET', rootIntegration);
-    api.root.addMethod('POST', rootIntegration);
-
-    const items = api.root.addResource('items');
-    items.addMethod('GET', rootIntegration);
-    items.addMethod('POST', rootIntegration);
-
-    // Stack Outputs
     new cdk.CfnOutput(this, 'ApiUrl', {
-      value: api.url,
+      value: service.api.url,
       description: 'API Gateway URL',
-      exportName: 'apiUrl',
+      exportName: `${this.stackName}-api-url`,
     });
 
     new cdk.CfnOutput(this, 'DynamoDBTableName', {
-      value: dynamodbTable.tableName,
+      value: service.table.tableName,
       description: 'DynamoDB table name',
-      exportName: 'tableName',
+      exportName: `${this.stackName}-table-name`,
     });
 
-    // Add Tags to Resources
-    cdk.Tags.of(this).add('Environment', 'Development');
-    cdk.Tags.of(this).add('Project', 'DemoAPI');
-    }
+    new cdk.CfnOutput(this, 'ItemsByCreatedAtIndexName', {
+      value: itemsByCreatedAtIndexName,
+      description: 'DynamoDB GSI used for createdAt-ordered item pagination',
+      exportName: `${this.stackName}-items-by-created-at-index-name`,
+    });
+
+    new cdk.CfnOutput(this, 'PlatformCatalogEntityRef', {
+      value: 'component:default/infra-as-code-with-cdk',
+      description: 'Backstage catalog entity reference for the platform product',
+      exportName: `${this.stackName}-catalog-entity-ref`,
+    });
+
+    new cdk.CfnOutput(this, 'RecommendedPathTemplateName', {
+      value: 'recommended-path-service',
+      description: 'Backstage recommended path template name',
+      exportName: `${this.stackName}-recommended-path-template-name`,
+    });
+
+    new cdk.CfnOutput(this, 'MonthlyCostBudgetName', {
+      value: monthlyBudgetName,
+      description: 'FinOps monthly cost budget name',
+      exportName: `${this.stackName}-monthly-cost-budget-name`,
+    });
+
+    new cdk.CfnOutput(this, 'CostAnomalyMonitorArn', {
+      value: anomalyMonitor.attrMonitorArn,
+      description: 'FinOps Cost Explorer anomaly monitor ARN',
+      exportName: `${this.stackName}-cost-anomaly-monitor-arn`,
+    });
+
+    new cdk.CfnOutput(this, 'ObservabilityDashboardName', {
+      value: observability.dashboard.dashboardName,
+      description: 'CloudWatch dashboard for platform observability',
+      exportName: `${this.stackName}-observability-dashboard-name`,
+    });
+
+    new cdk.CfnOutput(this, 'PlatformVersion', {
+      value: getPlatformMetadata().version,
+      description: 'Platform version',
+      exportName: `${this.stackName}-platform-version`,
+    });
+
+    new cdk.CfnOutput(this, 'CompositeAlarmName', {
+      value: observability.compositeAlarm.alarmName,
+      description: 'Composite alarm covering all platform alerts',
+      exportName: `${this.stackName}-composite-alarm-name`,
+    });
+
+    new cdk.CfnOutput(this, 'ObservabilityAlarmTopicArn', {
+      value: alarmTopic.topicArn,
+      description: 'SNS topic ARN for observability alarms',
+      exportName: `${this.stackName}-observability-alarm-topic-arn`,
+    });
+
+    new cdk.CfnOutput(this, 'LambdaApplicationLogGroupName', {
+      value: service.lambdaApplicationLogs.logGroupName,
+      description: 'Application log group name used by Lambda structured logs',
+      exportName: `${this.stackName}-lambda-application-log-group-name`,
+    });
+
+    cdk.Tags.of(this).add('environment', props.platformConfig.environment);
+    cdk.Tags.of(this).add('project', props.platformConfig.project);
+    cdk.Tags.of(this).add('owner', props.platformConfig.owner);
+    cdk.Tags.of(this).add('cost-center', props.platformConfig.costCenter);
+    cdk.Tags.of(this).add('data-classification', props.platformConfig.dataClassification);
+    cdk.Tags.of(this).add('finops-managed', 'true');
+
+    // Also add governance tags directly to the DynamoDB table to ensure
+    // assertions that inspect table properties find them (some test runners
+    // may not resolve propagated stack tags). Explicit tagging guarantees
+    // the expected tags appear on the table resource.
+    cdk.Tags.of(service.table).add('environment', props.platformConfig.environment);
+    cdk.Tags.of(service.table).add('project', props.platformConfig.project);
+    cdk.Tags.of(service.table).add('owner', props.platformConfig.owner);
+    cdk.Tags.of(service.table).add('cost-center', props.platformConfig.costCenter);
+    cdk.Tags.of(service.table).add('data-classification', props.platformConfig.dataClassification);
+    cdk.Tags.of(service.table).add('finops-managed', 'true');
+
+    applyComplianceGuardrails(this);
+    stackSuppressionsForApiLambdaDynamo(this, 'demo-api');
   }
+}
+
+function budgetNotificationWithEmail(
+  alertEmail: string,
+  notificationType: 'ACTUAL' | 'FORECASTED',
+  threshold: number,
+): budgets.CfnBudget.NotificationWithSubscribersProperty {
+  return {
+    notification: {
+      comparisonOperator: 'GREATER_THAN',
+      notificationType,
+      threshold,
+      thresholdType: 'PERCENTAGE',
+    },
+    subscribers: [
+      {
+        subscriptionType: 'EMAIL',
+        address: alertEmail,
+      },
+    ],
+  };
+}

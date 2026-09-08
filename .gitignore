@@ -1,6 +1,11 @@
-*.js
-!jest.config.js
+# Built JavaScript output (source is TypeScript)
+dist/**/*.js
+dist/**/*.d.ts
+
+# TypeScript declarations
 *.d.ts
+
+# Do NOT add blanket *.js ignores — jest.config.js and other configs are JS
 node_modules
 .DS_Store
 .env
@@ -9,3 +14,26 @@ node_modules
 .cdk.staging
 cdk.out
 dist
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local development
+.localstack/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Coverage
+coverage/
