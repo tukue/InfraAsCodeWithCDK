@@ -45,14 +45,14 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ steps.image.output.tag }}
+            ${{ env.IMAGE_NAME }}:${{ steps.image.outputs.tag }}
             ${{ env.IMAGE_NAME }}:main
 
       - name: Update dev manifest tag
         run: |
-          sed -i "s/newTag: .*/newTag: ${{ steps.image.output.tag }}/" deploy/overlays/dev/kustomization.yaml
+          sed -i "s/newTag: .*/newTag: ${{ steps.image.outputs.tag }}/" deploy/overlays/dev/kustomization.yaml
 
       - name: Commit manifest update
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: promote dev image to ${{ steps.image.output.tag }}"
+          commit_message: "chore: promote dev image to ${{ steps.image.outputs.tag }}"
