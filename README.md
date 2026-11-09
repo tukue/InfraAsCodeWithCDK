@@ -344,7 +344,7 @@ deny[msg] { contains(image, ":latest") }
 
 ```bash
 # Prerequisites
-node >= 18
+node 22.x
 npm >= 9
 aws-cdk >= 2.99.1
 AWS CLI configured with appropriate credentials

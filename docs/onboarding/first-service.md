@@ -4,7 +4,7 @@ This tutorial provisions a service through the platform golden path in less than
 
 ## Prerequisites
 
-- Node.js 20
+- Node.js 22
 - AWS credentials for the target sandbox account
 - CDK bootstrap completed for the target account and region
 

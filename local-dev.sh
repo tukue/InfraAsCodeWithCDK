@@ -19,7 +19,7 @@ for cmd in "${PREREQS[@]}"; do
 done
 
 # Verify Node version matches .nvmrc
-REQUIRED_NODE=$(cat .nvmrc 2>/dev/null || echo "20")
+REQUIRED_NODE=$(cat .nvmrc 2>/dev/null || echo "22")
 CURRENT_NODE=$(node -v | sed 's/v//' | cut -d. -f1)
 
 if [ "$CURRENT_NODE" -lt "$(echo "$REQUIRED_NODE" | sed 's/[^0-9]//g')" ]; then
