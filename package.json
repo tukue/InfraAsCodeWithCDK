@@ -1,6 +1,9 @@
 {
   "name": "infra-as-code-with-cdk",
   "version": "0.2.0",
+  "engines": {
+    "node": ">=22 <25"
+  },
   "bin": {
     "infra-as-code-with-cdk": "bin/app.js"
   },
@@ -24,7 +27,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.122",
     "@types/jest": "^29.5.5",
-    "@types/node": "20.7.1",
+    "@types/node": "22.15.3",
     "aws-cdk": "2.99.1",
     "esbuild": "^0.21.5",
     "eslint": "^8.56.0",

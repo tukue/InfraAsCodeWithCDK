@@ -27,5 +27,5 @@ Use AWS CDK v2 with TypeScript for the following reasons:
 - All infrastructure is defined in TypeScript
 - CDK synth compiles to CloudFormation templates
 - Terraform is used alongside where needed (Vault provider, which lacks CDK support)
-- Requires Node.js 20 runtime in CI/CD pipelines
+- Requires Node.js 22 runtime in CI/CD pipelines
 - Platform constructs can be published as an npm package for app teams
